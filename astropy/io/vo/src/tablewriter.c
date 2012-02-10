@@ -180,8 +180,8 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
 {
     /* Inputs */
     PyObject* write_method = NULL;
+    PyObject* getmaskarray = NULL;
     PyObject* array = NULL;
-    PyObject* mask = NULL;
     PyObject* converters = NULL;
     int write_null_values = 0;
     Py_ssize_t indent = 0;
@@ -199,7 +199,6 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
     PyObject* numpy_module = NULL;
     PyObject* numpy_all_method = NULL;
     PyObject* array_row = NULL;
-    PyObject* mask_row = NULL;
     PyObject* array_val = NULL;
     PyObject* mask_val = NULL;
     PyObject* converter = NULL;
@@ -211,14 +210,13 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
     PyObject* result = 0;
 
     if (!PyArg_ParseTuple(args, "OOOOinn:write_tabledata",
-                          &write_method, &array, &mask, &converters,
+                          &write_method, &getmaskarray, &array, &converters,
                           &write_null_values, &indent, &buf_size)) {
         goto exit;
     }
 
     if (!PyCallable_Check(write_method)) goto exit;
     if (!PySequence_Check(array)) goto exit;
-    if (!PySequence_Check(mask)) goto exit;
     if (!PyList_Check(converters)) goto exit;
     indent = CLAMP(indent, (Py_ssize_t)0, (Py_ssize_t)80);
     buf_size = CLAMP(buf_size, (Py_ssize_t)1 << 8, (Py_ssize_t)1 << 24);
@@ -234,7 +232,6 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
 
     for (i = 0; i < nrows; ++i) {
         if ((array_row = PySequence_GetItem(array, i)) == NULL) goto exit;
-        if ((mask_row = PySequence_GetItem(mask, i)) == NULL) goto exit;
 
         x = buf;
         if (_write_indent(&buf, &buf_size, &x, indent)) goto exit;
@@ -243,7 +240,9 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
         for (j = 0; j < ncols; ++j) {
             if ((converter = PyList_GET_ITEM(converters, j)) == NULL) goto exit;
             if ((array_val = PySequence_GetItem(array_row, j)) == NULL) goto exit;
-            if ((mask_val = PySequence_GetItem(mask_row, j)) == NULL) goto exit;
+
+            printf("row %d, col %d\n", i, j);
+            mask_val = PyObject_CallFunctionObjArgs(getmaskarray, array_val, NULL);
 
             if (write_null_values) {
                 write_full = 1;
@@ -296,7 +295,6 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
         }
 
         Py_DECREF(array_row); array_row = NULL;
-        Py_DECREF(mask_row);  mask_row = NULL;
 
         if (_write_indent(&buf, &buf_size, &x, indent)) goto exit;
         if (_write_cstring(&buf, &buf_size, &x, " </TR>\n", 7)) goto exit;
@@ -316,7 +314,6 @@ write_tabledata(PyObject* self, PyObject *args, PyObject *kwds)
     Py_XDECREF(numpy_all_method);
 
     Py_XDECREF(array_row);
-    Py_XDECREF(mask_row);
     Py_XDECREF(array_val);
     Py_XDECREF(mask_val);
 

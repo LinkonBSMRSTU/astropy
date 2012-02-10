@@ -1,5 +1,6 @@
 # THIRD-PARTY
 import numpy as np
+from numpy import ma
 
 # LOCAL
 from .. import converters
@@ -73,7 +74,7 @@ def test_float_mask():
         None, name='c', datatype='float',
         config=config)
     c = converters.get_converter(field, config=config)
-    assert c.parse('') == (c.null, True)
+    assert ma.getmaskarray(c.parse('')) == True
     c.parse('null')
 
 
@@ -83,7 +84,7 @@ def test_float_mask_permissive():
         None, name='c', datatype='float',
         config=config)
     c = converters.get_converter(field, config=config)
-    assert c.parse('null') == (c.null, True)
+    assert ma.getmaskarray(c.parse('null')) == True
 
 
 @raises(exceptions.E02)
@@ -103,7 +104,7 @@ def test_complex_array_vararray2():
         config=config)
     c = converters.get_converter(field, config=config)
     x = c.parse("")
-    assert len(x[0]) == 0
+    assert len(x) == 0
 
 
 def test_complex_array_vararray():
@@ -113,8 +114,8 @@ def test_complex_array_vararray():
         config=config)
     c = converters.get_converter(field, config=config)
     x = c.parse("1 2 3 4 5 6 7 8 9 10 11 12")
-    assert len(x) == 2
-    assert np.all(x[0][0][0] == complex(1, 2))
+    assert x.shape == (3, 2)
+    assert np.all(x[0][0] == complex(1, 2))
 
 
 def test_complex_vararray():
@@ -125,7 +126,7 @@ def test_complex_vararray():
     c = converters.get_converter(field, config=config)
     x = c.parse("1 2 3 4")
     assert len(x) == 2
-    assert x[0][0] == complex(1, 2)
+    assert x[0] == complex(1, 2)
 
 
 @raises(exceptions.E03)

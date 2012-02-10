@@ -13,6 +13,7 @@ import sys
 
 # THIRD-PARTY
 import numpy as np
+from numpy import ma
 
 # ASTROPY
 from ...utils.xml.writer import xml_escape_cdata
@@ -82,9 +83,8 @@ class Converter(object):
 
         Returns
         -------
-        native : tuple (value, mask)
-            The value as a Numpy array or scalar, and *mask* is True
-            if the value is missing.
+        native : array
+            The value as a Numpy array or scalar.  It may be a masked array.
         """
         raise NotImplementedError(
             "This datatype must implement a 'parse' method.")
@@ -103,9 +103,9 @@ class Converter(object):
 
         Returns
         -------
-        native : tuple (value, mask)
-            The value as a Numpy array or scalar, and *mask* is True
-            if the value is missing.
+        native : array
+            The value as a Numpy array or scalar.  It may be a masked
+            array.
         """
         return self.parse(value, config, pos)
 
@@ -218,12 +218,12 @@ class Char(Converter):
     def _ascii_parse(self, value, config={}, pos=None):
         if self.arraysize != '*' and len(value) > self.arraysize:
             vo_warn(W46, ('char', self.arraysize), config, pos)
-        return value.encode('ascii'), False
+        return value.encode('ascii')
 
     def _str_parse(self, value, config={}, pos=None):
         if self.arraysize != '*' and len(value) > self.arraysize:
             vo_warn(W46, ('char', self.arraysize), config, pos)
-        return value.encode('utf-8'), False
+        return value.encode('utf-8')
 
     def output(self, value, mask):
         if mask:
@@ -234,14 +234,14 @@ class Char(Converter):
 
     def _binparse_var(self, read):
         length = self._parse_length(read)
-        return read(length), False
+        return read(length)
 
     def _binparse_fixed(self, read):
         s = struct_unpack(self._struct_format, read(self.arraysize))[0]
         end = s.find(_zero_byte)
         if end != -1:
-            return s[:end], False
-        return s, False
+            return s[:end]
+        return s
 
     def _binoutput_var(self, value, mask):
         if mask or value is None or value == u'':
@@ -287,7 +287,7 @@ class UnicodeChar(Converter):
     def parse(self, value, config={}, pos=None):
         if self.arraysize != '*' and len(value) > self.arraysize:
             vo_warn(W46, ('unicodeChar', self.arraysize), config, pos)
-        return value, False
+        return value
 
     def output(self, value, mask):
         if mask:
@@ -296,15 +296,15 @@ class UnicodeChar(Converter):
 
     def _binparse_var(self, read):
         length = self._parse_length(read)
-        return read(length * 2).decode('utf_16_be'), False
+        return read(length * 2).decode('utf_16_be')
 
     def _binparse_fixed(self, read):
         s = struct_unpack(self._struct_format, read(self.arraysize * 2))[0]
         s = s.decode('utf_16_be')
         end = s.find('\0')
         if end != -1:
-            return s[:end], False
-        return s, False
+            return s[:end]
+        return s
 
     def _binoutput_var(self, value, mask):
         if mask or value is None or value == '':
@@ -358,6 +358,7 @@ class VarArray(Array):
 
     def output(self, value, mask):
         output = self._base.output
+        mask = value.mask
         result = [output(x, m) for x, m in np.broadcast(value, mask)]
         return u' '.join(result)
 
@@ -368,15 +369,15 @@ class VarArray(Array):
         result_mask = []
         binparse = self._base.binparse
         for i in xrange(length):
-            val, mask = binparse(read)
+            val = binparse(read)
             result.append(val)
-            result_mask.append(mask)
-        return (np.array(result),
-                np.array(result_mask, dtype='bool'))
+            result_mask.append(ma.getmaskarray(val))
+        return ma.array(result, mask=result_mask)
 
     def binoutput(self, value, mask):
         if value is None or len(value) == 0:
             return _zero_int
+        mask = value.mask
 
         length = len(value)
         result = [self._write_length(length)]
@@ -393,7 +394,7 @@ class ArrayVarArray(VarArray):
     """
     def parse(self, value, config={}, pos=None):
         if value.strip() == '':
-            return np.array([]), True
+            return ma.array([], dtype=self.format)
 
         parts = self._splitter(value, config, pos)
         items = self._base._items
@@ -403,10 +404,10 @@ class ArrayVarArray(VarArray):
         result = []
         result_mask = []
         for i in xrange(0, len(parts), items):
-            value, mask = parse_parts(parts[i:i+items], config, pos)
+            value = parse_parts(parts[i:i+items], config, pos)
             result.append(value)
-            result_mask.append(mask)
-        return np.array(result), np.array(result_mask, dtype='bool')
+            result_mask.append(ma.getmaskarray(value))
+        return ma.array(result, mask=result_mask)
 
 
 class ScalarVarArray(VarArray):
@@ -415,7 +416,7 @@ class ScalarVarArray(VarArray):
     """
     def parse(self, value, config={}, pos=None):
         if value.strip() == '':
-            return np.array([]), True
+            return np.array([], dtype=self.format)
 
         parts = self._splitter(value, config, pos)
 
@@ -423,11 +424,10 @@ class ScalarVarArray(VarArray):
         result = []
         result_mask = []
         for x in parts:
-            value, mask = parse(x, config, pos)
+            value = parse(x, config, pos)
             result.append(value)
-            result_mask.append(mask)
-        return (np.array(result, dtype=self._base.format),
-                np.array(result_mask, dtype='bool'))
+            result_mask.append(ma.getmaskarray(value))
+        return ma.array(result, dtype=self._base.format, mask=result_mask)
 
 
 class NumericArray(Array):
@@ -475,14 +475,14 @@ class NumericArray(Array):
         result = []
         result_mask = []
         for x in parts:
-            value, mask = base_parse(x, config, pos)
+            value = base_parse(x, config, pos)
             result.append(value)
-            result_mask.append(mask)
+            result_mask.append(ma.getmaskarray(value))
         result = np.array(result, dtype=self._base.format).reshape(
             self._arraysize)
         result_mask = np.array(result_mask, dtype='bool').reshape(
             self._arraysize)
-        return result, result_mask
+        return ma.array(result, mask=result_mask)
 
     def output(self, value, mask):
         base_output = self._base.output
@@ -495,7 +495,7 @@ class NumericArray(Array):
         result = np.fromstring(read(self._memsize),
                                dtype=self._bigendian_format)[0]
         result_mask = self._base.is_null(result)
-        return result, result_mask
+        return ma.array(result, mask=result_mask)
 
     def binoutput(self, value, mask):
         filtered = self._base.filter_array(value, mask)
@@ -527,7 +527,7 @@ class Numeric(Converter):
     def binparse(self, read):
         result = np.fromstring(read(self._memsize),
                                dtype=self._bigendian_format)
-        return result[0], self.is_null(result[0])
+        return ma.array(result[0], mask=self.is_null(result[0]))
 
     def _is_null(self, value):
         return value == self.null
@@ -570,20 +570,20 @@ class FloatingPoint(Numeric):
 
     def _parse_pedantic(self, value, config={}, pos=None):
         if value.strip() == '':
-            return self.null, True
+            return ma.array(self.null, dtype=self.format, mask=True)
         f = float(value)
-        return f, self.is_null(f)
+        return ma.array(f, mask=self.is_null(f))
 
     def _parse_permissive(self, value, config={}, pos=None):
         try:
             f = float(value)
-            return f, self.is_null(f)
+            return ma.array(f, mask=self.is_null(f))
         except ValueError:
             # IRSA VOTables use the word 'null' to specify empty values,
             # but this is not defined in the VOTable spec.
             if value.strip() != '':
                 vo_warn(W30, value, config, pos)
-            return self.null, True
+            return ma.array(self.null, mask=True)
 
     def output(self, value, mask):
         if mask:
@@ -620,6 +620,7 @@ class Double(FloatingPoint):
     floating-point.
     """
     format = 'f8'
+    null = np.nan
 
 
 class Float(FloatingPoint):
@@ -627,6 +628,7 @@ class Float(FloatingPoint):
     Handles the float datatype.  Single-precision IEEE floating-point.
     """
     format = 'f4'
+    null = np.nan
 
 
 class Integer(Numeric):
@@ -663,7 +665,7 @@ class Integer(Numeric):
             value = int(value)
         if self.null is not None and value == self.null:
             mask = True
-        return value, mask
+        return ma.array(value, mask=mask)
 
     def output(self, value, mask):
         if mask:
@@ -729,7 +731,7 @@ class ComplexArrayVarArray(VarArray):
 
     def parse(self, value, config={}, pos=None):
         if value.strip() == '':
-            return np.array([]), True
+            return np.array([])
 
         parts = self._splitter(value, config, pos)
         items = self._base._items
@@ -739,10 +741,10 @@ class ComplexArrayVarArray(VarArray):
         result = []
         result_mask = []
         for i in xrange(0, len(parts), items):
-            value, mask = parse_parts(parts[i:i + items], config, pos)
+            value = parse_parts(parts[i:i + items], config, pos)
             result.append(value)
-            result_mask.append(mask)
-        return np.array(result), np.array(result_mask, dtype='bool')
+            result_mask.append(ma.getmaskarray(value))
+        return ma.array(result, mask=result_mask)
 
 
 class ComplexVarArray(VarArray):
@@ -754,7 +756,7 @@ class ComplexVarArray(VarArray):
 
     def parse(self, value, config={}, pos=None):
         if value.strip() == '':
-            return np.array([]), True
+            return np.array([])
 
         parts = self._splitter(value, config, pos)
         parse_parts = self._base.parse_parts
@@ -762,11 +764,11 @@ class ComplexVarArray(VarArray):
         result_mask = []
         for i in xrange(0, len(parts), 2):
             value = [float(x) for x in parts[i:i + 2]]
-            value, mask = parse_parts(value, config, pos)
+            value = parse_parts(value, config, pos)
             result.append(value)
-            result_mask.append(mask)
-        return (np.array(result, dtype=self._base.format),
-                np.array(result_mask, dtype='bool'))
+            result_mask.append(ma.getmaskarray(value))
+        return ma.array(result, dtype=self._base.format,
+                        mask=result_mask)
 
 
 class ComplexArray(NumericArray):
@@ -793,14 +795,14 @@ class ComplexArray(NumericArray):
         result_mask = []
         for i in xrange(0, self._items, 2):
             value = [float(x) for x in parts[i:i + 2]]
-            value, mask = base_parse(value, config, pos)
+            value = base_parse(value, config, pos)
             result.append(value)
-            result_mask.append(mask)
+            result_mask.append(ma.getmaskarray(value))
         result = np.array(
             result, dtype=self._base.format).reshape(self._arraysize)
         result_mask = np.array(
             result_mask, dtype='bool').reshape(self._arraysize)
-        return result, result_mask
+        return ma.array(result, mask=result_mask)
 
 
 class Complex(FloatingPoint, Array):
@@ -819,7 +821,7 @@ class Complex(FloatingPoint, Array):
 
     def parse(self, value, config={}, pos=None):
         if value.strip() == '':
-            return np.nan, True
+            return ma.array(np.nan, mask=True)
         splitter = self._splitter
         parts = [float(x) for x in splitter(value, config, pos)]
         if len(parts) != 2:
@@ -830,7 +832,7 @@ class Complex(FloatingPoint, Array):
 
     def parse_parts(self, parts, config={}, pos=None):
         value = complex(*parts)
-        return value, self.is_null(value)
+        return ma.array(value, mask=self.is_null(value))
 
     def output(self, value, mask):
         if mask:
@@ -899,8 +901,7 @@ class BitArray(NumericArray):
                 break
 
         result = np.array(results, dtype='b1').reshape(self._arraysize)
-        result_mask = np.zeros(self._arraysize, dtype='b1')
-        return result, result_mask
+        return np.array(result)
 
     def binoutput(self, value, mask):
         if np.any(mask):
@@ -946,10 +947,10 @@ class Bit(Converter):
         mapping = {'1': True, '0': False}
         if value is False or value.strip() == '':
             warn_or_raise(W49, W49, (), config, pos)
-            return False, True
+            return ma.array(False, mask=True)
         else:
             try:
-                return mapping[value], False
+                return np.array(mapping[value])
             except KeyError:
                 vo_raise(E04, (value,), config, pos)
 
@@ -964,7 +965,7 @@ class Bit(Converter):
 
     def binparse(self, read):
         data = read(1)
-        return (ord(data) & 0x8) != 0, False
+        return np.array((ord(data) & 0x8) != 0)
 
     def binoutput(self, value, mask):
         if mask:
@@ -992,14 +993,14 @@ class BooleanArray(NumericArray):
         for char in data:
             if not IS_PY3K:
                 char = ord(char)
-            value, mask = binparse(char)
+            value = binparse(char)
             result.append(value)
-            result_mask.append(mask)
+            result_mask.append(ma.getmaskarray(value))
         result = np.array(result, dtype='b1').reshape(
             self._arraysize)
         result_mask = np.array(result_mask, dtype='b1').reshape(
             self._arraysize)
-        return result, result_mask
+        return ma.array(result, mask=result_mask)
 
     def binoutput(self, value, mask):
         binoutput = self._base.binoutput
@@ -1027,7 +1028,7 @@ class Boolean(Converter):
 
     def parse(self, value, config={}, pos=None):
         if value is False:
-            return False, True
+            return ma.array(False, mask=True)
         mapping = {'TRUE'  : (True, False),
                    'FALSE' : (False, False),
                    '1'     : (True, False),
@@ -1039,7 +1040,8 @@ class Boolean(Converter):
                    '?'     : (False, True),
                    ''      : (False, True)}
         try:
-            return mapping[value.upper()]
+            val, mask = mapping[value.upper()]
+            return ma.array(val, mask=mask)
         except KeyError:
             vo_raise(E05, (value,), config, pos)
 
@@ -1067,7 +1069,8 @@ class Boolean(Converter):
 
     def binparse_value(self, value):
         try:
-            return self._binparse_mapping[value]
+            val, mask = self._binparse_mapping[value.upper()]
+            return ma.array(val, mask=mask)
         except KeyError:
             vo_raise(E05, (value,))
 
