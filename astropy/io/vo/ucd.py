@@ -38,6 +38,13 @@ class UCDWords:
                 self._descriptions[name_lower] = descr
                 self._capitalization[name_lower] = name
 
+    _singleton = None
+    @classmethod
+    def get(cls):
+        if cls._singleton is None:
+            cls._singleton = cls()
+        return cls._singleton
+
     def is_primary(self, name):
         """
         Returns True if *name* is a valid primary name.
@@ -98,20 +105,19 @@ def parse_ucd(ucd, check_controlled_vocabulary=False, has_colon=False):
     ------
     ValueError : *ucd* is invalid
     """
-    global _ucd_singleton
-    if _ucd_singleton is None:
-        _ucd_singleton = UCDWords()
+    ucd_words = UCDWords.get()
 
     if has_colon:
         m = re.search(u'[^A-Za-z0-9_.:;\-]', ucd)
     else:
         m = re.search(u'[^A-Za-z0-9_.;\-]', ucd)
     if m is not None:
-        raise ValueError("UCD has invalid character '%s' in '%s'" %
-                         (m.group(0), ucd))
+        raise ValueError(
+            "UCD has invalid character {0!r} in {1!r}".format(
+                m.group(0), ucd))
 
     word_component_re = u'[A-Za-z0-9][A-Za-z0-9\-_]*'
-    word_re = u'%s(\.%s)*' % (word_component_re, word_component_re)
+    word_re = u'{0}(\.{0})*'.format(word_component_re)
 
     parts = ucd.split(u';')
     words = []
@@ -120,28 +126,28 @@ def parse_ucd(ucd, check_controlled_vocabulary=False, has_colon=False):
         if colon_count == 1:
             ns, word = word.split(u':', 1)
             if not re.match(word_component_re, ns):
-                raise ValueError("Invalid namespace '%s'" % ns)
+                raise ValueError("Invalid namespace {0!r}".format(ns))
             ns = ns.lower()
         elif colon_count > 1:
-            raise ValueError("Too many colons in '%s'" % word)
+            raise ValueError("Too many colons in {0!r}".format(word))
         else:
             ns = u'ivoa'
 
         if not re.match(word_re, word):
-            raise ValueError("Invalid word '%s'" % word)
+            raise ValueError("Invalid word {0!r}".format(word))
 
         if ns == u'ivoa' and check_controlled_vocabulary:
             if i == 0:
-                if not _ucd_singleton.is_primary(word):
-                    if _ucd_singleton.is_secondary(word):
+                if not ucd_words.is_primary(word):
+                    if ucd_words.is_secondary(word):
                         raise ValueError(
-                            "Secondary word '%s' is not valid as a primary "
+                            "Secondary word {0!r} is not valid as a primary "
                             "word" % word)
                     else:
                         raise ValueError("Unknown word '%s'" % word)
             else:
-                if not _ucd_singleton.is_secondary(word):
-                    if _ucd_singleton.is_primary(word):
+                if not ucd_words.is_secondary(word):
+                    if ucd_words.is_primary(word):
                         raise ValueError(
                             "Primary word '%s' is not valid as a secondary "
                             "word" % word)
@@ -149,7 +155,7 @@ def parse_ucd(ucd, check_controlled_vocabulary=False, has_colon=False):
                         raise ValueError("Unknown word '%s'" % word)
 
         try:
-            normalized_word = _ucd_singleton.normalize_capitalization(word)
+            normalized_word = ucd_words.normalize_capitalization(word)
         except KeyError:
             normalized_word = word
         words.append((ns, normalized_word))

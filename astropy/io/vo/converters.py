@@ -205,10 +205,10 @@ class Char(Converter):
                 self.arraysize = int(field.arraysize)
             except ValueError:
                 vo_raise(E01, (field.arraysize, 'char', field.ID), config)
-            self.format = 'S%d' % self.arraysize
+            self.format = 'S{0:d}'.format(self.arraysize)
             self.binparse = self._binparse_fixed
             self.binoutput = self._binoutput_fixed
-            self._struct_format = ">%ds" % self.arraysize
+            self._struct_format = ">{0:d}s".format(self.arraysize)
 
         if config.get('pedantic'):
             self.parse = self._ascii_parse
@@ -279,10 +279,10 @@ class UnicodeChar(Converter):
                 self.arraysize = int(field.arraysize)
             except ValueError:
                 vo_raise(E01, (field.arraysize, 'unicode', field.ID), config)
-            self.format = 'U%d' % self.arraysize
+            self.format = 'U{0:d}'.format(self.arraysize)
             self.binparse = self._binparse_fixed
             self.binoutput = self._binoutput_fixed
-            self._struct_format = ">%ds" % (self.arraysize * 2)
+            self._struct_format = ">{0:d}s".format(self.arraysize * 2)
 
     def parse(self, value, config={}, pos=None):
         if self.arraysize != '*' and len(value) > self.arraysize:
@@ -441,7 +441,7 @@ class NumericArray(Array):
 
         self._base = base
         self._arraysize = arraysize
-        self.format = "%s%s" % (tuple(arraysize), base.format)
+        self.format = "{0}{1}".format(tuple(arraysize), base.format)
 
         self._items = 1
         for dim in arraysize:
@@ -544,13 +544,13 @@ class FloatingPoint(Numeric):
 
         precision = field.precision
         if precision is None:
-            self._output_format = u'%g'
+            self._output_format = u'{0:g}'
         elif precision.startswith("E"):
-            self._output_format = u"%%.%dE" % (int(precision[1:]))
+            self._output_format = u"{{0:.{0:d}E}}".format(int(precision[1:]))
         elif precision.startswith("F"):
-            self._output_format = u"%%.%dg" % (int(precision[1:]))
+            self._output_format = u"{{0:.{0:d}g}}".format(int(precision[1:]))
         else:
-            self._output_format = u"%%.%dg" % (int(precision))
+            self._output_format = u"{{0:.{0:d}g}}".format(int(precision))
 
         self.nan = np.array(np.nan, self.format)
 
@@ -589,7 +589,7 @@ class FloatingPoint(Numeric):
         if mask:
             return self._null_output
         if np.isfinite(value):
-            return self._output_format % value
+            return self._output_format.format(value)
         elif np.isnan(value):
             return u'NaN'
         elif np.isposinf(value):
@@ -597,7 +597,7 @@ class FloatingPoint(Numeric):
         elif np.isneginf(value):
             return u'-InF'
         # Should never raise
-        vo_raise("Invalid floating point value '%s'" % value)
+        vo_raise("Invalid floating point value {0:r}".format(value))
 
     def binoutput(self, value, mask):
         if mask:
@@ -815,7 +815,8 @@ class Complex(FloatingPoint, Array):
         FloatingPoint.__init__(self, field, config, pos)
         Array.__init__(self, field, config, pos)
 
-        self._output_format = self._output_format + " " + self._output_format
+        self._output_format = " ".join(
+            (self._output_format, self._output_format))
 
     def parse(self, value, config={}, pos=None):
         if value.strip() == '':
@@ -838,7 +839,7 @@ class Complex(FloatingPoint, Array):
                 return u'NaN'
             else:
                 value = self.null
-        return self._output_format % (value.real, value.imag)
+        return self._output_format.format(value.real, value.imag)
 
 
 class FloatComplex(Complex):
@@ -925,7 +926,7 @@ class BitArray(NumericArray):
 
         assert len(bytes) == self._bytes
 
-        return struct_pack("%sB" % len(bytes), *bytes)
+        return struct_pack("{0:d}B".format(len(bytes)), *bytes)
 
 
 class Bit(Converter):
