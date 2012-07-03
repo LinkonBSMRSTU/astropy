@@ -1,6 +1,6 @@
 /*============================================================================
 
-  WCSLIB 4.10 - an implementation of the FITS WCS standard.
+  WCSLIB 4.13 - an implementation of the FITS WCS standard.
   Copyright (C) 1995-2012, Mark Calabretta
 
   This file is part of WCSLIB.
@@ -28,7 +28,7 @@
 
   Author: Mark Calabretta, Australia Telescope National Facility
   http://www.atnf.csiro.au/~mcalabre/index.html
-  $Id: tab.c,v 4.10 2012/02/05 23:41:44 cal103 Exp $
+  $Id: tab.c,v 4.13.1.1 2012/03/14 07:40:37 cal103 Exp cal103 $
 *===========================================================================*/
 
 #include <math.h>
@@ -477,8 +477,10 @@ int tabfree(struct tabprm *tab)
   tab->extrema = 0x0;
   tab->set_M   = 0;
 
-  if (tab->err) free(tab->err);
-  tab->err = 0x0;
+  if (tab->err) {
+    free(tab->err);
+    tab->err = 0x0;
+  }
 
   tab->flag = 0;
 
@@ -1309,7 +1311,7 @@ int tabs2x(
     statp++;
   }
 
-  if (M > 1) free(tabcoord);
+  if (tabcoord) free(tabcoord);
 
   return status;
 }

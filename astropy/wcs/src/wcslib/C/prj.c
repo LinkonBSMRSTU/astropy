@@ -1,6 +1,6 @@
 /*============================================================================
 
-  WCSLIB 4.10 - an implementation of the FITS WCS standard.
+  WCSLIB 4.13 - an implementation of the FITS WCS standard.
   Copyright (C) 1995-2012, Mark Calabretta
 
   This file is part of WCSLIB.
@@ -28,7 +28,7 @@
 
   Author: Mark Calabretta, Australia Telescope National Facility
   http://www.atnf.csiro.au/~mcalabre/index.html
-  $Id: prj.c,v 4.10 2012/02/05 23:41:44 cal103 Exp $
+  $Id: prj.c,v 4.13.1.1 2012/03/14 07:40:37 cal103 Exp cal103 $
 *===========================================================================*/
 
 #include <math.h>
@@ -172,11 +172,15 @@ struct prjprm *prj;
   prj->divergent = 0;
   prj->x0 = 0.0;
   prj->y0 = 0.0;
+
+  prj->err = 0x0;
+
+  prj->padding = 0x0;
   for (k = 0; k < 10; prj->w[k++] = 0.0);
   prj->m = 0;
   prj->n = 0;
-
-  prj->err = 0x0;
+  prj->prjx2s = 0x0;
+  prj->prjs2x = 0x0;
 
   return 0;
 }
@@ -190,8 +194,10 @@ struct prjprm *prj;
 {
   if (prj == 0x0) return PRJERR_NULL_POINTER;
 
-  if (prj->err) free(prj->err);
-  prj->err = 0x0;
+  if (prj->err) {
+    free(prj->err);
+    prj->err = 0x0;
+  }
 
   return 0;
 }
@@ -717,7 +723,7 @@ int stat[];
         if (prj->bounds) {
           if (*thetap < prj->w[5]) {
             /* Overlap. */
-            istat  = 1;
+            istat = 1;
             if (!status) status = PRJERR_BAD_WORLD_SET("azps2x");
 
           } else if (prj->w[7] > 0.0) {
@@ -734,7 +740,7 @@ int stat[];
               if (b > 90.0) b -= 360.0;
 
               if (*thetap < ((a > b) ? a : b)) {
-                istat  = 1;
+                istat = 1;
                 if (!status) status = PRJERR_BAD_WORLD_SET("azps2x");
               }
             }
@@ -1047,7 +1053,7 @@ int stat[];
         if (prj->bounds) {
           if (*thetap < prj->w[8]) {
             /* Divergence. */
-            istat  = 1;
+            istat = 1;
             if (!status) status = PRJERR_BAD_WORLD_SET("szps2x");
 
           } else if (fabs(prj->pv[1]) > 1.0) {
@@ -1065,7 +1071,7 @@ int stat[];
               if (b > 90.0) b -= 360.0;
 
               if (*thetap < ((a > b) ? a : b)) {
-                istat  = 1;
+                istat = 1;
                 if (!status) status = PRJERR_BAD_WORLD_SET("szps2x");
               }
             }
@@ -1277,7 +1283,7 @@ int stat[];
 
       istat = 0;
       if (prj->bounds && s < 0.0) {
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_WORLD_SET("tans2x");
       }
 
@@ -1799,7 +1805,7 @@ int stat[];
       /* Orthographic projection. */
       istat = 0;
       if (prj->bounds && *thetap < 0.0) {
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_WORLD_SET("sins2x");
       }
 
@@ -1820,7 +1826,7 @@ int stat[];
         if (prj->bounds) {
           t = -atand(prj->pv[1]*(*xp) - prj->pv[2]*(*yp));
           if (*thetap < t) {
-            istat  = 1;
+            istat = 1;
             if (!status) status = PRJERR_BAD_WORLD_SET("sins2x");
           }
         }
@@ -2408,7 +2414,7 @@ int stat[];
 
     istat = 0;
     if (prj->bounds && s > prj->w[0]) {
-      istat  = 1;
+      istat = 1;
       if (!status) status = PRJERR_BAD_WORLD_SET("zpns2x");
     }
 
@@ -2926,7 +2932,7 @@ int stat[];
       }
     } else {
       r = 0.0;
-      istat  = 1;
+      istat = 1;
       if (!status) status = PRJERR_BAD_WORLD_SET("airs2x");
     }
 
@@ -3153,7 +3159,7 @@ int stat[];
 
     istat = 0;
     if (eta == 0.0) {
-      istat  = 1;
+      istat = 1;
       if (!status) status = PRJERR_BAD_WORLD_SET("cyps2x");
 
     } else {
@@ -3304,7 +3310,7 @@ int stat[];
     if (fabs(s) > 1.0) {
       if (fabs(s) > 1.0+tol) {
         s = 0.0;
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_PIX_SET("ceax2s");
       } else {
         s = copysign(90.0, s);
@@ -3748,7 +3754,7 @@ int stat[];
 
     if (*thetap <= -90.0 || *thetap >= 90.0) {
       eta = 0.0;
-      istat  = 1;
+      istat = 1;
       if (!status) status = PRJERR_BAD_WORLD_SET("mers2x");
     } else {
       eta = prj->r0*log(tand((*thetap+90.0)/2.0)) - prj->y0;
@@ -3829,7 +3835,7 @@ int stat[];
 {
   int mx, my, rowlen, rowoff, status;
   double s, t, yj;
-  register int ix, iy, *statp;
+  register int istat, ix, iy, *statp;
   register const double *xp, *yp;
   register double *phip, *thetap;
 
@@ -3876,7 +3882,9 @@ int stat[];
     yj = *yp + prj->y0;
     s = cos(yj/prj->r0);
 
+    istat = 0;
     if (s == 0.0) {
+      istat = 1;
       if (!status) status = PRJERR_BAD_PIX_SET("sflx2s");
     } else {
       s = 1.0/s;
@@ -3887,7 +3895,7 @@ int stat[];
     for (ix = 0; ix < mx; ix++, phip += spt, thetap += spt) {
       *phip  *= s;
       *thetap = t;
-      *(statp++) = 0;
+      *(statp++) = istat;
     }
   }
 
@@ -4090,7 +4098,7 @@ int stat[];
     if (r > 1.0 || r < -1.0) {
       s = 0.0;
       t = 0.0;
-      istat  = 1;
+      istat = 1;
       if (!status) status = PRJERR_BAD_PIX_SET("parx2s");
 
     } else {
@@ -4316,7 +4324,7 @@ int stat[];
     istat = 0;
     if (r <= tol) {
       if (r < -tol) {
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_PIX_SET("molx2s");
       } else {
         /* OK if fabs(x) < tol whence phi = 0.0. */
@@ -4335,7 +4343,7 @@ int stat[];
     if (fabs(z) > 1.0) {
       if (fabs(z) > 1.0+tol) {
         z = 0.0;
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_PIX_SET("molx2s");
       } else {
         z = copysign(1.0, z) + y0*r/PI;
@@ -4347,7 +4355,7 @@ int stat[];
     if (fabs(z) > 1.0) {
       if (fabs(z) > 1.0+tol) {
         z = 0.0;
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_PIX_SET("molx2s");
       } else {
         z = copysign(1.0, z);
@@ -4594,7 +4602,7 @@ int stat[];
       istat = 0;
       if (s < 0.5) {
         if (s < 0.5-tol) {
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_PIX_SET("aitx2s");
         }
 
@@ -4613,7 +4621,7 @@ int stat[];
       t = z*yj/prj->r0;
       if (fabs(t) > 1.0) {
         if (fabs(t) > 1.0+tol) {
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_PIX_SET("aitx2s");
         }
         t = copysign(90.0, t);
@@ -4923,14 +4931,14 @@ int stat[];
     istat = 0;
     if (s == 0.0) {
       r = 0.0;
-      istat  = 1;
+      istat = 1;
       if (!status) status = PRJERR_BAD_WORLD_SET("cops2x");
 
     } else {
       r = prj->w[2] - prj->w[3]*sind(t)/s;
 
       if (prj->bounds && r*prj->w[0] < 0.0) {
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_WORLD_SET("cops2x");
       }
     }
@@ -5112,7 +5120,7 @@ int stat[];
             t = -90.0;
           } else {
             t = 0.0;
-            istat  = 1;
+            istat = 1;
             if (!status) status = PRJERR_BAD_PIX_SET("coex2s");
           }
         } else {
@@ -5589,7 +5597,7 @@ int stat[];
           t = -90.0;
         } else {
           t = 0.0;
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_PIX_SET("coox2s");
         }
       } else {
@@ -5671,7 +5679,7 @@ int stat[];
     if (*thetap == -90.0) {
       r = 0.0;
       if (prj->w[0] >= 0.0) {
-        istat  = 1;
+        istat = 1;
         if (!status) status = PRJERR_BAD_WORLD_SET("coos2x");
       }
     } else {
@@ -6509,14 +6517,14 @@ int stat[];
       istat = 0;
       if (fabs(xf) > 1.0) {
         if (fabs(xf) > 1.0+tol) {
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_WORLD_SET("tscs2x");
         }
         xf = copysign(1.0, xf);
       }
       if (fabs(yf) > 1.0) {
         if (fabs(yf) > 1.0+tol) {
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_WORLD_SET("tscs2x");
         }
         yf = copysign(1.0, yf);
@@ -6596,12 +6604,12 @@ int stat[];
 
 {
   int face, mx, my, rowlen, rowoff, status;
-  double l, m, n;
+  double l, m, n, t;
   register int ix, iy, *statp;
   register const double *xp, *yp;
   register double *phip, *thetap;
 
-  float     chi, psi, xf, xx, yf, yy, z0, z1, z2, z3, z4, z5, z6;
+  float chi, psi, xf, xx, yf, yy, z0, z1, z2, z3, z4, z5, z6;
   const float p00 = -0.27292696f;
   const float p10 = -0.07629969f;
   const float p20 = -0.22797056f;
@@ -6673,11 +6681,11 @@ int stat[];
     yf = (float)((*yp + prj->y0)*prj->w[1]);
 
     for (ix = 0; ix < mx; ix++, phip += spt, thetap += spt) {
-      xf = (float)*phip;
+      xf = (float)(*phip);
 
       /* Check bounds. */
-      if (fabs(xf) <= 1.0) {
-        if (fabs(yf) > 3.0) {
+      if (fabs((double)xf) <= 1.0) {
+        if (fabs((double)yf) > 3.0) {
           *phip = 0.0;
           *thetap = 0.0;
           *(statp++) = 1;
@@ -6685,7 +6693,7 @@ int stat[];
           continue;
         }
       } else {
-        if (fabs(xf) > 7.0 || fabs(yf) > 1.0) {
+        if (fabs((double)xf) > 7.0 || fabs((double)yf) > 1.0) {
           *phip = 0.0;
           *thetap = 0.0;
           *(statp++) = 1;
@@ -6744,35 +6752,36 @@ int stat[];
       psi = z0 + xx*(z1 + xx*(z2 + xx*(z3 + xx*(z4 + xx*(z5 + xx*z6)))));
       psi = yf + yf*(1.0f - yy)*psi;
 
+      t = 1.0/sqrt((double)(chi*chi + psi*psi) + 1.0);
       switch (face) {
       case 1:
-        l =  1.0/sqrt(chi*chi + psi*psi + 1.0);
+        l =  t;
         m =  chi*l;
         n =  psi*l;
         break;
       case 2:
-        m =  1.0/sqrt(chi*chi + psi*psi + 1.0);
+        m =  t;
         l = -chi*m;
         n =  psi*m;
         break;
       case 3:
-        l = -1.0/sqrt(chi*chi + psi*psi + 1.0);
+        l = -t;
         m =  chi*l;
         n = -psi*l;
         break;
       case 4:
-        m = -1.0/sqrt(chi*chi + psi*psi + 1.0);
+        m = -t;
         l = -chi*m;
         n = -psi*m;
         break;
       case 5:
-        n = -1.0/sqrt(chi*chi + psi*psi + 1.0);
+        n = -t;
         l = -psi*n;
         m = -chi*n;
         break;
       default:
         /* face == 0 */
-        n =  1.0/sqrt(chi*chi + psi*psi + 1.0);
+        n =  t;
         l = -psi*n;
         m =  chi*n;
         break;
@@ -6805,7 +6814,7 @@ int stat[];
 {
   int face, mphi, mtheta, rowlen, rowoff, status;
   double cosphi, costhe, eta, l, m, n, sinphi, sinthe, xi, zeta;
-  const float tol = 1.0e-7f;
+  const float tol = 1.0e-7;
   register int iphi, istat, itheta, *statp;
   register const double *phip, *thetap;
   register double *xp, *yp;
@@ -6938,7 +6947,7 @@ int stat[];
         break;
       }
 
-      chi = (float)(xi/zeta);
+      chi = (float)( xi/zeta);
       psi = (float)(eta/zeta);
 
       chi2 = chi*chi;
@@ -6947,7 +6956,7 @@ int stat[];
       psi2co = 1.0f - psi2;
 
       /* Avoid floating underflows. */
-      chipsi = fabsf(chi*psi);
+      chipsi = (float)fabs((double)(chi*psi));
       chi4   = (chi2 > 1.0e-16f) ? chi2*chi2 : 0.0f;
       psi4   = (psi2 > 1.0e-16f) ? psi2*psi2 : 0.0f;
       chi2psi2 = (chipsi > 1.0e-16f) ? chi2*psi2 : 0.0f;
@@ -6960,27 +6969,19 @@ int stat[];
                 c02*chi4)) + psi2*(omega1 - psi2co*(d0 + d1*psi2))));
 
       istat = 0;
-      if (fabs(xf) > 1.0) {
-        if (fabs(xf) > 1.0+tol) {
-          istat  = 1;
+      if (fabs((double)xf) > 1.0) {
+        if (fabs((double)xf) > 1.0+tol) {
+          istat = 1;
           if (!status) status = PRJERR_BAD_WORLD_SET("cscs2x");
         }
-        #ifndef _MSC_VER
-        xf = copysignf(1.0f, xf);
-        #else
         xf = (float)copysign(1.0, (double)xf);
-        #endif
       }
-      if (fabs(yf) > 1.0) {
-        if (fabs(yf) > 1.0+tol) {
-          istat  = 1;
+      if (fabs((double)yf) > 1.0) {
+        if (fabs((double)yf) > 1.0+tol) {
+          istat = 1;
           if (!status) status = PRJERR_BAD_WORLD_SET("cscs2x");
         }
-        #ifndef _MSC_VER
-        yf = copysignf(1.0f, yf);
-        #else
         yf = (float)copysign(1.0, (double)yf);
-        #endif
       }
 
       *xp = prj->w[0]*(xf + x0) - prj->x0;
@@ -7491,14 +7492,14 @@ int stat[];
       istat = 0;
       if (fabs(xf) > 1.0) {
         if (fabs(xf) > 1.0+tol) {
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_WORLD_SET("qscs2x");
         }
         xf = copysign(1.0, xf);
       }
       if (fabs(yf) > 1.0) {
         if (fabs(yf) > 1.0+tol) {
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_WORLD_SET("qscs2x");
         }
         yf = copysign(1.0, yf);
@@ -7692,7 +7693,7 @@ int stat[];
         if (t < -1.0) {
           s = 0.0;
           t = 0.0;
-          istat  = 1;
+          istat = 1;
           if (!status) status = PRJERR_BAD_PIX_SET("hpxx2s");
         } else {
           s = 1.0/sigma;
