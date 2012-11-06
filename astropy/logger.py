@@ -418,8 +418,10 @@ class AstropyLogger(Logger):
         f = logging.Formatter(LOG_FILE_FORMAT())
         fh.setFormatter(f)
         self.addHandler(fh)
-        yield
-        self.removeHandler(fh)
+        try:
+            yield
+        finally:
+            self.removeHandler(fh)
 
     @contextmanager
     def log_to_list(self, filter_level=None, filter_origin=None):
@@ -461,8 +463,10 @@ class AstropyLogger(Logger):
         if filter_origin is not None:
             lh.addFilter(FilterOrigin(filter_origin))
         self.addHandler(lh)
-        yield lh.log_list
-        self.removeHandler(lh)
+        try:
+            yield lh.log_list
+        finally:
+            self.removeHandler(lh)
 
     def setLevel(self, level):
         """

@@ -51,9 +51,11 @@ def convert_to_writable_filelike(fd, compressed=False):
             from ...utils.compat import gzip
             with gzip.GzipFile(fd, 'wb') as real_fd:
                 encoded_fd = io.TextIOWrapper(real_fd, encoding='utf8')
-                yield encoded_fd
-                encoded_fd.flush()
-                real_fd.flush()
+                try:
+                    yield encoded_fd
+                finally:
+                    encoded_fd.flush()
+                    real_fd.flush()
                 return
         else:
             with io.open(fd, 'wt', encoding='utf8') as real_fd:
@@ -79,11 +81,15 @@ def convert_to_writable_filelike(fd, compressed=False):
 
         if needs_wrapper:
             import codecs
-            yield codecs.getwriter('utf-8')(fd)
-            fd.flush()
+            try:
+                yield codecs.getwriter('utf-8')(fd)
+            finally:
+                fd.flush()
         else:
-            yield fd
-            fd.flush()
+            try:
+                yield fd
+            finally:
+                fd.flush()
 
         return
     else:
