@@ -52,5 +52,3 @@ def test_invalid_namespace():
 @raises(ValueError)
 def test_invalid_word():
     ucd.parse_ucd("-pho")
-
-

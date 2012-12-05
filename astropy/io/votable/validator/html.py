@@ -74,8 +74,8 @@ def make_html_header(w):
 
 def write_source_line(w, line, nchar=0):
     part1 = xml_escape(line[:nchar].decode('utf-8'))
-    char = xml_escape(line[nchar:nchar+1].decode('utf-8'))
-    part2 = xml_escape(line[nchar+1:].decode('utf-8'))
+    char = xml_escape(line[nchar:nchar + 1].decode('utf-8'))
+    part2 = xml_escape(line[nchar + 1:].decode('utf-8'))
 
     w.write(u'  ')
     w.write(part1)
@@ -228,22 +228,24 @@ def write_table(basename, name, results, root="results", chunk_size=500):
             return
         with w.tag(u'center'):
             if j > 0:
-                w.element(u'a', u'<< ', href=u'%s_%02d.html' % (basename, j-1))
+                w.element(
+                    u'a', u'<< ', href=u'%s_%02d.html' % (basename, j - 1))
             for i in xrange(npages):
                 if i == j:
-                    w.data(unicode(i+1))
+                    w.data(unicode(i + 1))
                 else:
                     w.element(
-                        u'a', unicode(i+1),
+                        u'a', unicode(i + 1),
                         href=u'%s_%02d.html' % (basename, i))
                 w.data(' ')
             if j < npages - 1:
-                w.element(u'a', u'>>', href=u'%s_%02d.html' % (basename, j+1))
+                w.element(
+                    u'a', u'>>', href=u'%s_%02d.html' % (basename, j + 1))
 
     npages = int(ceil(float(len(results)) / chunk_size))
 
     for i, j in enumerate(xrange(0, max(len(results), 1), chunk_size)):
-        subresults = results[j:j+chunk_size]
+        subresults = results[j:j + chunk_size]
         path = os.path.join(root, '%s_%02d.html' % (basename, i))
         with io.open(path, 'w', encoding='utf-8') as fd:
             w = XMLWriter(fd)

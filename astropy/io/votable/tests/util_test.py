@@ -33,7 +33,7 @@ def test_range_list4a():
 def test_range_list4():
     assert (util.coerce_range_list_param(
         (5e-7, (None, 8e-7), (4, None), (4, 5), "J", "FOO"), numeric=False) ==
-            ("5e-07,/8e-07,4/,4/5,J;FOO", 6))
+        ("5e-07,/8e-07,4/,4/5,J;FOO", 6))
 
 
 @raises(ValueError)
@@ -67,4 +67,3 @@ def test_range_list9a():
 def test_range_list9():
     assert util.coerce_range_list_param(
         "52,-27.8;GALACTIC", util.stc_reference_frames)
-

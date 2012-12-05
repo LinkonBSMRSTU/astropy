@@ -18,8 +18,9 @@ from numpy import ma
 from ...utils.xml.writer import xml_escape_cdata
 
 # LOCAL
-from .exceptions import (vo_raise, vo_warn, warn_or_raise, W01,
-    W30, W31, W39, W46, W47, W49, E01, E02, E03, E04, E05, E06)
+from .exceptions import (
+    vo_raise, vo_warn, warn_or_raise, W01, W30, W31, W39, W46, W47, W49,
+    E01, E02, E03, E04, E05, E06)
 from .util import IS_PY3K
 
 
@@ -419,7 +420,7 @@ class ArrayVarArray(VarArray):
         result = []
         result_mask = []
         for i in xrange(0, len(parts), items):
-            value, mask = parse_parts(parts[i:i+items], config, pos)
+            value, mask = parse_parts(parts[i:i + items], config, pos)
             result.append(value)
             result_mask.append(mask)
 

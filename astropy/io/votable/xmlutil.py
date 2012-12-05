@@ -9,15 +9,15 @@ from ...utils.xml import check as xml_check
 from ...utils.xml import validate
 
 # LOCAL
-from .exceptions import (warn_or_raise, vo_warn,
-     W02, W03, W04, W05)
+from .exceptions import (
+    warn_or_raise, vo_warn, W02, W03, W04, W05)
 from ...utils import data
 
 
 __all__ = [
     'check_id', 'fix_id', 'check_token', 'check_mime_content_type',
     'check_anyuri', 'validate_schema'
-    ]
+]
 
 
 def check_id(ID, name='ID', config={}, pos=None):

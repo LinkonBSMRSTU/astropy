@@ -250,7 +250,7 @@ def get_result_subsets(results, root, s=None):
         all_results.append(x)
         if (x['nwarnings'] == 0 and
             x['nexceptions'] == 0 and
-            x['xmllint'] is True):
+                x['xmllint'] is True):
             correct.append(x)
         if not x.match_expectations():
             not_expected.append(x)
@@ -258,13 +258,13 @@ def get_result_subsets(results, root, s=None):
             fail_schema.append(x)
         if (x['xmllint'] is False and
             x['nwarnings'] == 0 and
-            x['nexceptions'] == 0):
+                x['nexceptions'] == 0):
             schema_mismatch.append(x)
         if 'votlint' in x and x['votlint'] is False:
             fail_votlint.append(x)
             if (x['nwarnings'] == 0 and
                 x['nexceptions'] == 0 and
-                x['network_error'] is None):
+                    x['network_error'] is None):
                 votlint_mismatch.append(x)
         if x['network_error'] is not None:
             network_failures.append(x)
@@ -282,7 +282,7 @@ def get_result_subsets(results, root, s=None):
             for warning in x['warning_types']:
                 if (warning is not None and
                     len(warning) == 3 and
-                    warning.startswith('W')):
+                        warning.startswith('W')):
                     warning_set.setdefault(warning, [])
                     warning_set[warning].append(x)
         if x['nexceptions'] > 0:

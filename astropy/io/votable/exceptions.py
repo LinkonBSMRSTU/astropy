@@ -67,7 +67,7 @@ def _suppressed_warning(warning, config, stacklevel=2):
         if message_count == MAX_WARNINGS:
             warning.formatted_message += \
                 ' (suppressing further warnings of this type...)'
-        warn(warning, stacklevel=stacklevel+1)
+        warn(warning, stacklevel=stacklevel + 1)
 
 
 def warn_or_raise(warning_class, exception_class=None, args=(), config={},
@@ -80,7 +80,7 @@ def warn_or_raise(warning_class, exception_class=None, args=(), config={},
             exception_class = warning_class
         vo_raise(exception_class, args, config, pos)
     else:
-        vo_warn(warning_class, args, config, pos, stacklevel=stacklevel+1)
+        vo_warn(warning_class, args, config, pos, stacklevel=stacklevel + 1)
 
 
 def vo_raise(exception_class, args=(), config={}, pos=None):
@@ -111,13 +111,14 @@ def vo_warn(warning_class, args=(), config={}, pos=None, stacklevel=1):
     Warn, with proper position information if available.
     """
     warning = warning_class(args, config, pos)
-    _suppressed_warning(warning, config, stacklevel=stacklevel+1)
+    _suppressed_warning(warning, config, stacklevel=stacklevel + 1)
 
 
 def warn_unknown_attrs(element, attrs, config, pos, good_attr=[], stacklevel=1):
     for attr in attrs:
         if attr not in good_attr:
-            vo_warn(W48, (attr, element), config, pos, stacklevel=stacklevel+1)
+            vo_warn(
+                W48, (attr, element), config, pos, stacklevel=stacklevel + 1)
 
 
 _warning_pat = re.compile(

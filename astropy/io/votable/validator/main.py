@@ -16,7 +16,6 @@ from . import result
 __all__ = ['make_validation_report']
 
 
-
 def get_srcdir():
     return os.path.dirname(__file__)
 
@@ -76,7 +75,7 @@ def write_subindex(args):
 
 def make_validation_report(
     urls=None, destdir='astropy.io.votable.validator.results',
-    multiprocess=True, stilts=None):
+        multiprocess=True, stilts=None):
     """
     Validates a large collection of web-accessible VOTable files.
 
@@ -145,7 +144,6 @@ def make_validation_report(
         votlint_args = [(stilts, x, destdir) for x in urls]
         ProgressBar.map(
             votlint_validate, votlint_args, multiprocess=multiprocess)
-
 
     color_print('Generating HTML files', 'green')
     ProgressBar.map(

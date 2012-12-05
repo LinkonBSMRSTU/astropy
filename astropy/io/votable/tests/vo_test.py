@@ -30,7 +30,7 @@ from ....utils.compat import gzip
 
 numpy_has_complex_bug = (
     version.LooseVersion(np.__version__) < version.LooseVersion('1.5')
-    )
+)
 
 join = os.path.join
 
@@ -119,7 +119,7 @@ def _test_regression(_python_based=False):
         ('precision2', '<f8'),
         ('doublearray', '|O8'),
         ('bitarray2', '|b1', (16,))
-        ]
+    ]
 
     votable.to_xml(join(TMP_DIR, "regression.tabledata.xml"),
                    _debug_python_based_parser=_python_based)
@@ -141,11 +141,11 @@ def _test_regression(_python_based=False):
 
     with io.open(
         get_pkg_data_filename('data/regression.bin.tabledata.truth.xml'),
-        'rt', encoding='utf-8') as fd:
+            'rt', encoding='utf-8') as fd:
         truth = fd.readlines()
     with io.open(
         join(TMP_DIR, "regression.bin.tabledata.xml"),
-        'rt', encoding='utf-8') as fd:
+            'rt', encoding='utf-8') as fd:
         output = fd.readlines()
 
     # If the lines happen to be different, print a diff
@@ -164,7 +164,7 @@ def _test_regression(_python_based=False):
         _astropy_version="testing",
         _debug_python_based_parser=_python_based)
     with gzip.GzipFile(
-        join(TMP_DIR, "regression.bin.tabledata.xml.gz"), 'rb') as gzfd:
+            join(TMP_DIR, "regression.bin.tabledata.xml.gz"), 'rb') as gzfd:
         output = gzfd.readlines()
     output = [x.decode('utf-8').rstrip() for x in output]
     truth = [x.rstrip() for x in truth]
@@ -381,16 +381,16 @@ class TestParse:
                           np.bool_)
         self.array['bitarray'].shape == (5, 3, 2)
         assert_array_equal(self.array['bitarray'],
-                           [[[ True, False],
-                             [ True,  True],
-                             [False,  True]],
+                           [[[True, False],
+                             [True, True],
+                             [False, True]],
 
-                            [[False,  True],
+                            [[False, True],
                              [False, False],
-                             [ True,  True]],
+                             [True, True]],
 
-                            [[ True,  True],
-                             [ True, False],
+                            [[True, True],
+                             [True, False],
                              [False, False]],
 
                             [[False, False],
@@ -415,20 +415,20 @@ class TestParse:
                              [False, False],
                              [False, False]],
 
-                            [[ True,  True],
-                             [ True,  True],
-                             [ True,  True]],
+                            [[True, True],
+                             [True, True],
+                             [True, True]],
 
-                            [[ True,  True],
-                             [ True,  True],
-                             [ True,  True]]])
+                            [[True, True],
+                             [True, True],
+                             [True, True]]])
 
     def test_bitvararray(self):
         assert issubclass(self.array['bitvararray'].dtype.type,
                           np.object_)
-        match = [[ True,  True,  True],
+        match = [[True, True, True],
                  [False, False, False, False, False],
-                 [ True, False,  True, False,  True],
+                 [True, False, True, False, True],
                  [], []]
         for a, b in zip(self.array['bitvararray'], match):
             assert_array_equal(a, b)
@@ -444,16 +444,16 @@ class TestParse:
                           np.object_)
         match = [[],
 
-                 [[[False,  True],
+                 [[[False, True],
                    [False, False],
-                   [ True, False]],
-                  [[ True, False],
-                   [ True, False],
-                   [ True, False]]],
+                   [True, False]],
+                  [[True, False],
+                   [True, False],
+                   [True, False]]],
 
-                 [[[ True,  True],
-                   [ True,  True],
-                   [ True,  True]]],
+                 [[[True, True],
+                   [True, True],
+                   [True, True]]],
 
                  [],
 
@@ -469,7 +469,7 @@ class TestParse:
         assert issubclass(self.array['floatComplex'].dtype.type,
                           np.complex64)
         assert_array_equal(self.array['floatComplex'],
-                           [np.nan+0j, 0+0j, 0+-1j, np.nan+0j, np.nan+0j])
+                           [np.nan + 0j, 0 + 0j, 0 + -1j, np.nan + 0j, np.nan + 0j])
         assert_array_equal(self.mask['floatComplex'],
                            [True, False, False, True, True])
 
@@ -479,7 +479,7 @@ class TestParse:
                           np.complex128)
         assert_array_equal(
             self.array['doubleComplex'],
-            [np.nan+0j, 0+0j, 0+-1j, np.nan+(np.inf*1j), np.nan+0j])
+            [np.nan + 0j, 0 + 0j, 0 + -1j, np.nan + (np.inf * 1j), np.nan + 0j])
         assert_array_equal(self.mask['doubleComplex'],
                            [True, False, False, True, True])
 
@@ -504,9 +504,9 @@ class TestParse:
         assert issubclass(self.array['booleanArray'].dtype.type,
                           np.bool_)
         assert_array_equal(self.array['booleanArray'],
-                           [[ True,  True,  True,  True],
-                            [ True,  True, False,  True],
-                            [ True,  True, False,  True],
+                           [[True, True, True, True],
+                            [True, True, False, True],
+                            [True, True, False, True],
                             [False, False, False, False],
                             [False, False, False, False]])
 
@@ -514,9 +514,9 @@ class TestParse:
         assert_array_equal(self.mask['booleanArray'],
                            [[False, False, False, False],
                             [False, False, False, False],
-                            [False, False,  True, False],
-                            [ True,  True,  True,  True],
-                            [ True,  True,  True,  True]])
+                            [False, False, True, False],
+                            [True, True, True, True],
+                            [True, True, True, True]])
 
     def test_nulls(self):
         assert_array_equal(self.array['nulls'],
@@ -532,20 +532,20 @@ class TestParse:
                             [[0, -9], [1, -9]],
                             [[-9, -9], [-9, -9]]])
         assert_array_equal(self.mask['nulls_array'],
-                           [[[ True,  True],
-                             [ True,  True]],
+                           [[[True, True],
+                             [True, True]],
 
                             [[False, False],
                              [False, False]],
 
-                            [[ True, False],
-                             [ True, False]],
+                            [[True, False],
+                             [True, False]],
 
-                            [[False,  True],
-                             [False,  True]],
+                            [[False, True],
+                             [False, True]],
 
-                            [[ True,  True],
-                             [ True,  True]]])
+                            [[True, True],
+                             [True, True]]])
 
     def test_double_array(self):
         assert issubclass(self.array['doublearray'].dtype.type,
@@ -624,8 +624,8 @@ def table_from_scratch():
 
     # Define some fields
     table.fields.extend([
-            Field(votable, ID="filename", datatype="char"),
-            Field(votable, ID="matrix", datatype="double", arraysize="2x2")])
+        Field(votable, ID="filename", datatype="char"),
+        Field(votable, ID="matrix", datatype="double", arraysize="2x2")])
 
     # Now, use those field definitions to create the numpy record arrays, with
     # the given number of rows
@@ -691,8 +691,8 @@ def test_build_from_scratch():
     assert_array_equal(
         table.array.mask, np.array([(False, [[False, False], [False, False]]),
                                     (False, [[False, False], [False, False]])],
-                                    dtype=[('filename', '?'),
-                                           ('matrix', '?', (2, 2))]))
+                                   dtype=[('filename', '?'),
+                      ('matrix', '?', (2, 2))]))
 
 
 def test_validate():
@@ -714,7 +714,7 @@ def test_validate():
 
     with io.open(
         get_pkg_data_filename('data/validation.txt'),
-        'rt', encoding='utf-8') as fd:
+            'rt', encoding='utf-8') as fd:
         truth = fd.readlines()
 
     truth = truth[1:]

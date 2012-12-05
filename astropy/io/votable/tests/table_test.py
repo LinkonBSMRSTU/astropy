@@ -14,9 +14,12 @@ from ....utils.data import get_pkg_data_filename
 from ..table import parse, writeto
 from .. import tree
 
-numpy_lt_1p5 = version.LooseVersion(np.__version__) < version.LooseVersion('1.5')
+numpy_lt_1p5 = version.LooseVersion(
+    np.__version__) < version.LooseVersion('1.5')
 
 TMP_DIR = None
+
+
 def setup_module():
     global TMP_DIR
     TMP_DIR = tempfile.mkdtemp()
@@ -60,8 +63,10 @@ def test_table():
         ('bitvararray2', {'datatype': 'bit', 'arraysize': '3x2*'}),
         ('floatComplex', {'datatype': 'floatComplex'}),
         ('doubleComplex', {'datatype': 'doubleComplex'}),
-        ('doubleComplexArray', {'datatype': 'doubleComplex', 'arraysize': '*'}),
-        ('doubleComplexArrayFixed', {'datatype': 'doubleComplex', 'arraysize': '2'}),
+        ('doubleComplexArray', {'datatype': 'doubleComplex',
+         'arraysize': '*'}),
+        ('doubleComplexArrayFixed', {'datatype': 'doubleComplex',
+         'arraysize': '2'}),
         ('boolean', {'datatype': 'bit'}),
         ('booleanArray', {'datatype': 'bit', 'arraysize': '4'}),
         ('nulls', {'datatype': 'int'}),

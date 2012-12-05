@@ -24,12 +24,11 @@ from ...utils.collections import HomogeneousList
 from ...utils.xml.writer import XMLWriter
 
 from . import converters
-from .exceptions import (warn_or_raise, vo_warn, vo_raise, vo_reraise,
-    warn_unknown_attrs,
-    W06, W07, W08, W09, W10, W11, W12, W13, W15, W17, W18, W19, W20,
-    W21, W22, W26, W27, W28, W29, W32, W33, W35, W36, W37, W38, W40,
-    W41, W42, W43, W44, W45, W50, E06, E08, E09, E10, E11, E12, E13,
-    E14, E15, E16, E17, E18, E19, E20, E21)
+from .exceptions import (
+    warn_or_raise, vo_warn, vo_raise, vo_reraise, warn_unknown_attrs, W06, W07,
+    W08, W09, W10, W11, W12, W13, W15, W17, W18, W19, W20, W21, W22, W26, W27,
+    W28, W29, W32, W33, W35, W36, W37, W38, W40, W41, W42, W43, W44, W45, W50,
+    E06, E08, E09, E10, E11, E12, E13, E15, E16, E17, E18, E19, E20, E21)
 from . import ucd as ucd_mod
 from . import util
 from . import xmlutil
@@ -45,7 +44,7 @@ __all__ = [
     'Link', 'Info', 'Values', 'Field', 'Param', 'CooSys',
     'FieldRef', 'ParamRef', 'Group', 'Table', 'Resource',
     'VOTableFile'
-    ]
+]
 
 
 # The default number of rows to read in each chunk before converting
@@ -167,7 +166,7 @@ def check_astroyear(year, field, config={}, pos=None):
         Information about the source of the value
     """
     if (year is not None and
-        re.match(ur"^[JB]?[0-9]+([.][0-9]*)?$", year) is None):
+            re.match(ur"^[JB]?[0-9]+([.][0-9]*)?$", year) is None):
         warn_or_raise(W07, W07, (field, year), config, pos)
         return False
     return True
@@ -304,7 +303,7 @@ class _UtypeProperty(object):
     def utype(self, utype):
         if (self._utype_in_v1_2 and
             utype is not None and
-            not self._config.get('version_1_2_or_later')):
+                not self._config.get('version_1_2_or_later')):
             warn_or_raise(
                 W28, W28, ('utype', self._element_name, '1.2'),
                 self._config, self._pos)
@@ -330,7 +329,7 @@ class _UcdProperty(object):
             ucd = None
         if ucd is not None:
             if (self._ucd_in_v1_2 and
-                not self._config.get('version_1_2_or_later')):
+                    not self._config.get('version_1_2_or_later')):
                 warn_or_raise(
                     W28, W28, ('ucd', self._element_name, '1.2'),
                     self._config, self._pos)
@@ -1045,7 +1044,7 @@ class Field(SimpleElement, _IDProperty, _NameProperty, _XtypeProperty,
         # will be raised when this happens.
         if (not config.get('pedantic') and name == 'cprojection' and
             ID == 'cprojection' and ucd == 'VOX:WCS_CoordProjection' and
-            datatype == 'double'):
+                datatype == 'double'):
             datatype = 'char'
             arraysize = '3'
             vo_warn(W40, (), config, pos)
@@ -1059,7 +1058,7 @@ class Field(SimpleElement, _IDProperty, _NameProperty, _XtypeProperty,
         self.name = name
         if name is None:
             if (self._element_name == 'PARAM' and
-                not config.get('version_1_1_or_later')):
+                    not config.get('version_1_1_or_later')):
                 pass
             else:
                 warn_or_raise(W15, W15, self._element_name, config, pos)
@@ -1132,7 +1131,7 @@ class Field(SimpleElement, _IDProperty, _NameProperty, _XtypeProperty,
                     i += 1
 
             if (not implicit and
-                new_name != field.name):
+                    new_name != field.name):
                 vo_warn(W33, (field.name, new_name), field._config, field._pos)
             field._unique_name = new_name
             unique[new_name] = field.name
@@ -1272,7 +1271,7 @@ class Field(SimpleElement, _IDProperty, _NameProperty, _XtypeProperty,
     @arraysize.setter
     def arraysize(self, arraysize):
         if (arraysize is not None and
-            not re.match(ur"^([0-9]+x)*[0-9]*[*]?(s\W)?$", arraysize)):
+                not re.match(ur"^([0-9]+x)*[0-9]*[*]?(s\W)?$", arraysize)):
             vo_raise(E13, arraysize, self._config, self._pos)
         self._arraysize = arraysize
 
@@ -1456,7 +1455,7 @@ class Param(Field):
         if value is None:
             value = ""
         if ((IS_PY3K and isinstance(value, unicode)) or
-            (not IS_PY3K and isinstance(value, string_types))):
+                (not IS_PY3K and isinstance(value, string_types))):
             self._value = self.converter.parse(
                 value, self._config, self._pos)[0]
         else:
@@ -2110,7 +2109,7 @@ class Table(Element, _IDProperty, _NameProperty, _UcdProperty,
         if current_table_number is not None:
             config['_current_table_number'] += 1
             if (table_number is not None and
-                table_number != current_table_number):
+                    table_number != current_table_number):
                 skip_table = True
                 self._empty = True
 
@@ -2348,7 +2347,7 @@ class Table(Element, _IDProperty, _NameProperty, _UcdProperty,
 
         if (self.nrows is not None and
             self.nrows >= 0 and
-            self.nrows != numrows):
+                self.nrows != numrows):
             warn_or_raise(W18, W18, (self.nrows, numrows), config, pos)
         self._nrows = numrows
 
@@ -2543,7 +2542,7 @@ class Table(Element, _IDProperty, _NameProperty, _UcdProperty,
         with w.tag(u'TABLEDATA'):
             w._flush()
             if (_has_c_tabledata_writer and
-                not kwargs.get('_debug_python_based_parser')):
+                    not kwargs.get('_debug_python_based_parser')):
                 fields = [field.converter.output for field in fields]
                 indent = len(w._tags) - 1
                 tablewriter.write_tabledata(
@@ -2566,7 +2565,7 @@ class Table(Element, _IDProperty, _NameProperty, _UcdProperty,
                         data = array_row[i]
                         masked = mask_row[i]
                         if (not np.all(masked) or
-                            write_null_values):
+                                write_null_values):
                             try:
                                 val = output(data, masked)
                             except Exception as e:
@@ -2698,7 +2697,6 @@ class Table(Element, _IDProperty, _NameProperty, _UcdProperty,
         Looks up a GROUP element by the given ID.  Used by the group's
         "ref" attribute
         """)
-
 
 
 class Resource(Element, _IDProperty, _NameProperty, _UtypeProperty,
@@ -3037,7 +3035,7 @@ class VOTableFile(Element, _IDProperty, _DescriptionProperty):
                             warn_or_raise(
                                 W29, W29, config['version'], config, pos)
                             self._version = config['version'] = \
-                                            config['version'][1:]
+                                config['version'][1:]
                         if config['version'] not in ('1.1', '1.2'):
                             vo_warn(W21, config['version'], config, pos)
 
@@ -3104,13 +3102,13 @@ class VOTableFile(Element, _IDProperty, _DescriptionProperty):
             'write_null_values': write_null_values,
             'version': self.version,
             'version_1_1_or_later':
-                util.version_compare(self.version, u'1.1') >= 0,
+            util.version_compare(self.version, u'1.1') >= 0,
             'version_1_2_or_later':
-                util.version_compare(self.version, u'1.2') >= 0,
+            util.version_compare(self.version, u'1.2') >= 0,
             '_debug_python_based_parser': _debug_python_based_parser}
 
         with util.convert_to_writable_filelike(
-            fd, compressed=compressed) as fd:
+                fd, compressed=compressed) as fd:
             w = XMLWriter(fd)
             version = self.version
             if _astropy_version is None:
@@ -3127,11 +3125,11 @@ class VOTableFile(Element, _IDProperty, _DescriptionProperty):
             with w.tag(u'VOTABLE',
                        {u'version': version,
                         u'xmlns:xsi':
-                            u"http://www.w3.org/2001/XMLSchema-instance",
+                        u"http://www.w3.org/2001/XMLSchema-instance",
                         u'xsi:noNamespaceSchemaLocation':
-                            u"http://www.ivoa.net/xml/VOTable/v%s" % version,
+                        u"http://www.ivoa.net/xml/VOTable/v%s" % version,
                         u'xmlns':
-                            u"http://www.ivoa.net/xml/VOTable/v%s" % version}):
+                        u"http://www.ivoa.net/xml/VOTable/v%s" % version}):
                 if self.description is not None:
                     w.element(u"DESCRIPTION", self.description, wrap=True)
                 element_sets = [self.coordinate_systems, self.params,
