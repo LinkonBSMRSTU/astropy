@@ -1,3 +1,4 @@
+{% block sidebarsourcelink %}
 {%- if show_source and has_source and sourcename %}
  <h3>{{ _('This Page') }}</h3>
  <ul class="this-page-menu">
@@ -5,4 +6,4 @@
          rel="nofollow">{{ _('Page Source') }}</a></li>
 </ul>
 {%- endif %}
-
+{% endblock %}
