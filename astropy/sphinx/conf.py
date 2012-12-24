@@ -131,6 +131,8 @@ html_theme_path = [path.abspath(path.join(path.dirname(__file__), 'themes'))]
 # a list of builtin themes.
 html_theme = 'bootstrap-astropy'
 
+display_github = True
+
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {'**': ['localtoc.html', 'sourcelink.html']}
 
