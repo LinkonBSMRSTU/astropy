@@ -392,8 +392,9 @@ div.sphinxsidebar p.topless {
     margin: 5px 10px 10px 10px;
 }
 div.sphinxsidebar ul {
-    margin: 0px 0px 0px 5px;
+    margin: 0px 0px 15px 5px;
     padding: 0;
+    list-style-type: none;
 }
 
 div.sphinxsidebar ul ul {
@@ -410,6 +411,10 @@ div.sphinxsidebar a.current:hover {
     color: #404040;
 }
 
+div.sphinxsidebar ul.this-page-menu {
+    margin-left: 20px;
+    list-style-type: disc;
+}
 
 /* document, documentwrapper, body, bodywrapper ----------------------------- */
 
