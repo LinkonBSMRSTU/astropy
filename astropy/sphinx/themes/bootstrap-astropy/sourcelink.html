@@ -1,7 +1,7 @@
 {% block sidebarsourcelink %}
 {%- if show_source and has_source and sourcename %}
  <h3>{{ _('This Page') }}</h3>
- <ul class="this-page-menu">
+ <ul>
   <li><a href="{{ pathto('_sources/' + sourcename, true)|e }}"
          rel="nofollow">{{ _('Page Source') }}</a></li>
 </ul>
