@@ -87,6 +87,12 @@ def test_decompose():
     assert u.Ry == u.Ry.decompose()
 
 
+def test_decompose_to_anonymous_units():
+    # Issue #1438
+    from astropy.constants import G
+    G.decompose([u.kg, u.km, u.Unit("15 s")])
+
+
 def test_dimensionless_to_si():
     """
     Issue #1150: Test for conversion of dimensionless quantities
