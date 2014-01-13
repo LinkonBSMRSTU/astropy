@@ -588,3 +588,23 @@ def assert_follows_unicode_guidelines(
         assert x.__class__(bytes_x) == x
         assert x.__class__(unicode_x) == x
         assert eval(repr_x, roundtrip) == x
+
+
+def u(s):
+    """
+    A helper function to put unicode literals in tests.
+
+    On Python 2, it decodes bytes strings as UTF-8 into Unicode
+    strings.  Unicode strings pass through unmodified.
+
+    On Python 3, it is a no-op.
+
+    This only works because all astropy's source files are encoded in
+    UTF-8 -- this will not work on arbitrary Python code in general.
+    """
+    if six.PY3:
+        return s
+    else:
+        if isinstance(s, bytes):
+            return s.decode('utf-8')
+        return s

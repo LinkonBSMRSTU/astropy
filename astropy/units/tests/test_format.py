@@ -11,6 +11,7 @@ from ...extern import six
 
 from numpy.testing.utils import assert_allclose
 from ...tests.helper import raises, pytest
+from ...tests import helper
 
 from ... import units as u
 from ...constants import si
@@ -57,7 +58,7 @@ def test_cds_grammar():
         (["km/s", "km.s-1"], u.km / u.s),
         (["10pix/nm"], u.Unit(10 * u.pix / u.nm)),
         (["1.5x10+11m"], u.Unit(1.5e11 * u.m)),
-        (["1.5×10+11m"], u.Unit(1.5e11 * u.m)),
+        ([helper.u("1.5×10+11m")], u.Unit(1.5e11 * u.m)),
         (["m2"], u.m ** 2),
         (["10+21m"], u.Unit(u.m * 1e21)),
         (["2.54cm"], u.Unit(u.cm * 2.54)),
@@ -77,10 +78,10 @@ def test_cds_grammar():
         (["mmag"], u.mmag),
         (["Mpc"], u.Mpc),
         (["Gyr"], u.Gyr),
-        (["°"], u.degree),
-        (["°/s"], u.degree / u.s),
-        (["Å"], u.AA),
-        (["Å/s"], u.AA / u.s),
+        ([helper.u("°")], u.degree),
+        ([helper.u("°/s")], u.degree / u.s),
+        ([helper.u("Å")], u.AA),
+        ([helper.u("Å/s")], u.AA / u.s),
         (["\\h"], si.h)]
 
     for strings, unit in data:
@@ -315,7 +316,7 @@ def test_fraction_repr():
     fractional = u.cm ** 2.5
     assert '5/2' in fractional.to_string('latex')
 
-    assert fractional.to_string('unicode') == 'cm⁵⸍²'
+    assert fractional.to_string('unicode') == helper.u('cm⁵⸍²')
 
 
 def test_scale_effectively_unity():

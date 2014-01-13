@@ -14,6 +14,7 @@ from numpy.testing.utils import assert_allclose
 from ...extern import six
 from ...extern.six.moves import cPickle as pickle
 from ...tests.helper import pytest, raises, catch_warnings
+from ...tests import helper
 from ...utils.compat.fractions import Fraction
 
 from ... import units as u
@@ -190,9 +191,9 @@ def test_cds_power():
 
 
 def test_register():
-    foo = u.def_unit("foo", u.m ** 3, namespace=locals())
+    u.def_unit("foo", u.m ** 3, namespace=locals())
     assert 'foo' in locals()
-    with u.add_enabled_units(foo):
+    with u.add_enabled_units(locals()['foo']):
         assert 'foo' in u.get_current_unit_registry().registry
     assert 'foo' not in u.get_current_unit_registry().registry
 
@@ -450,11 +451,11 @@ def test_pickling():
     assert other is u.m
 
     new_unit = u.IrreducibleUnit(['foo'], format={'baz': 'bar'})
-    u.add_enabled_units([new_unit])
-    p = pickle.dumps(new_unit)
-    new_unit_copy = pickle.loads(p)
-    assert new_unit_copy.names == ['foo']
-    assert new_unit_copy.get_format_name('baz') == 'bar'
+    with u.add_enabled_units([new_unit]):
+        p = pickle.dumps(new_unit)
+        new_unit_copy = pickle.loads(p)
+        assert new_unit_copy.names == ['foo']
+        assert new_unit_copy.get_format_name('baz') == 'bar'
 
 
 @raises(ValueError)
@@ -546,7 +547,7 @@ def test_suggestions():
             ('metre', 'meter'),
             ('angstroms', 'angstrom'),
             ('milimeter', 'millimeter'),
-            ('ångström', 'Angstrom or angstrom')]:
+            (helper.u('ångström'), 'Angstrom or angstrom')]:
         try:
             u.Unit(search)
         except ValueError as e:
