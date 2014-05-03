@@ -13,7 +13,7 @@ import numpy as np
 
 from .. import log
 from ..utils.compat import ignored
-from ..utils.console import Getch, color_print
+from ..utils.console import Getch, color_print, terminal_size
 from ..config import ConfigAlias
 
 if six.PY3:
@@ -60,21 +60,16 @@ def _get_pprint_size(max_lines=None, max_width=None):
 
     """
     if max_lines is None or max_width is None:
-        try:  # Will likely fail on Windows
-            import termios
-            import fcntl
-            import struct
-            s = struct.pack("HHHH", 0, 0, 0, 0)
-            fd_stdout = sys.stdout.fileno()
-            x = fcntl.ioctl(fd_stdout, termios.TIOCGWINSZ, s)
-            (lines, width, xpixels, ypixels) = struct.unpack("HHHH", x)
+        size = terminal_size()
+        if size is None: # terminal_size() will likely fail on Windows
+            from . import conf
+            lines, width = conf.max_lines, conf.max_width
+        else:
+            lines, width = size
             if lines > 12:
                 lines -= 6
             if width > 10:
                 width -= 1
-        except:
-            from . import conf
-            lines, width = conf.max_lines, conf.max_width
 
     if max_lines is None:
         max_lines = lines
