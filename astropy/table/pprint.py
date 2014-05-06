@@ -60,16 +60,7 @@ def _get_pprint_size(max_lines=None, max_width=None):
 
     """
     if max_lines is None or max_width is None:
-        size = terminal_size()
-        if size is None: # terminal_size() will likely fail on Windows
-            from . import conf
-            lines, width = conf.max_lines, conf.max_width
-        else:
-            lines, width = size
-            if lines > 12:
-                lines -= 6
-            if width > 10:
-                width -= 1
+        lines, width = terminal_size()
 
     if max_lines is None:
         max_lines = lines
