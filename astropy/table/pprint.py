@@ -28,23 +28,24 @@ elif six.PY2:
 
 
 MAX_LINES = ConfigAlias(
-    '0.4', 'MAX_LINES', 'max_lines', 'astropy.table.pprint', 'astropy.table')
+    '0.4', 'MAX_LINES', 'max_lines', 'astropy.table.pprint', 'astropy')
 MAX_WIDTH = ConfigAlias(
-    '0.4', 'MAX_WIDTH', 'max_width', 'astropy.table.pprint', 'astropy.table')
+    '0.4', 'MAX_WIDTH', 'max_width', 'astropy.table.pprint', 'astropy')
 
 
 def _get_pprint_size(max_lines=None, max_width=None):
     """Get the output size (number of lines and character width) for Column and
     Table pformat/pprint methods.
 
-    If no value of `max_lines` is supplied then the height of the screen
-    terminal is used to set `max_lines`.  If the terminal height cannot be
-    determined then the default will be determined using the
-    `astropy.table.conf.max_lines` configuration item. If a negative value
-    of `max_lines` is supplied then there is no line limit applied.
+    If no value of `max_lines` is supplied then the height of the
+    screen terminal is used to set `max_lines`.  If the terminal
+    height cannot be determined then the default will be determined
+    using the `astropy.conf.max_lines` configuration item. If a
+    negative value of `max_lines` is supplied then there is no line
+    limit applied.
 
-    The same applies for max_width except the configuration item is
-    `astropy.table.conf.max_width`.
+    The same applies for `max_width` except the configuration item is
+    `astropy.conf.max_width`.
 
     Parameters
     ----------
