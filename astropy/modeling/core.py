@@ -997,16 +997,11 @@ class SerialCompositeModel(_CompositeModel):
         >>> result = transform(labeled_input)
     """
 
-    def __init__(self, transforms, inmap=None, outmap=None, n_inputs=None,
-                 n_outputs=None):
-        if n_inputs is None:
-            n_inputs = max([tr.n_inputs for tr in transforms])
-            # the output dimension is equal to the output dim of the last
-            # transform
-            n_outputs = transforms[-1].n_outputs
-        else:
-            if n_outputs is None:
-                raise TypeError("Expected n_inputs and n_outputs")
+    def __init__(self, transforms, inmap=None, outmap=None):
+        n_inputs = transforms[0].n_inputs
+        # the output dimension is equal to the output dim of the last
+        # transform
+        n_outputs = transforms[-1].n_outputs
 
         super(SerialCompositeModel, self).__init__(transforms, n_inputs,
                                                    n_outputs)
@@ -1021,6 +1016,30 @@ class SerialCompositeModel(_CompositeModel):
 
         if outmap is None:
             outmap = [None] * len(transforms)
+
+        expect_inputs = None
+        for i, tr in enumerate(transforms):
+            if inmap[i] is not None:
+                if tr.n_inputs != len(inmap[i]):
+                    raise ValueError(
+                        "The number of inputs to step {0}, {1}, is not "
+                        "equal to the number of entries in the corresponding "
+                        "inmap, {2}".format(i, tr.n_inputs, len(inmap[i])))
+            else:
+                if expect_inputs is not None and tr.n_inputs != expect_inputs:
+                    raise ValueError(
+                        "The number of inputs to step {0}, {1}, is not "
+                        "equal to the number of outputs in the previous "
+                        "step, {2}".format(i, tr.n_inputs, expect_inputs))
+            if outmap[i] is not None:
+                if tr.n_outputs != len(outmap[i]):
+                    raise ValueError(
+                        "The number of outputs to step {0}, {1}, is not "
+                        "equal to the number of entries in the corresponding "
+                        "outmap, {2}".format(i, tr.n_outputs, len(outmap[i])))
+                expect_inputs = len(outmap[i])
+            else:
+                expect_inputs = tr.n_outputs
 
         self._inmap = inmap
         self._outmap = outmap
@@ -1113,11 +1132,20 @@ class SummedCompositeModel(_CompositeModel):
     def __init__(self, transforms, inmap=None, outmap=None):
         self._transforms = transforms
         n_inputs = self._transforms[0].n_inputs
-        n_outputs = n_inputs
-        for transform in self._transforms:
-            if not (transform.n_inputs == transform.n_outputs == n_inputs):
-                raise ValueError("A SummedCompositeModel expects n_inputs = "
-                                 "n_outputs for all transforms")
+        for tr in self._transforms[1:]:
+            if tr.n_inputs != n_inputs:
+                raise ValueError(
+                    "A SummedCompositeModel expects n_inputs "
+                    "to be equal for all transforms.  Got {0}".format(
+                        [x.n_inputs for x in self._transforms]))
+
+        n_outputs = self._transforms[0].n_outputs
+        for tr in self._transforms[1:]:
+            if tr.n_outputs != n_outputs:
+                raise ValueError(
+                    "A SummedCompositeModel expects n_outputs "
+                    "to be equal for all transforms.  Got {0}".format(
+                        [x.n_outputs for x in self._transforms]))
 
         super(SummedCompositeModel, self).__init__(transforms, n_inputs,
                                                    n_outputs)
@@ -1144,23 +1172,31 @@ class SummedCompositeModel(_CompositeModel):
                 # create a list of inputs to be passed to the transforms
                 inlist = [getattr(labeled_input, label)
                           for label in self._inmap]
-                sum_of_deltas = [np.zeros_like(x) for x in inlist]
-                for transform in self._transforms:
-                    delta = [transform(*inlist)]
-                    for i in range(len(sum_of_deltas)):
-                        sum_of_deltas[i] += delta[i]
+                result = self._transforms[0](*inlist)
+                for tr in self._transforms[1:]:
+                    subresult = tr(*inlist)
+                    if isinstance(result, tuple):
+                        for a, b in zip(result, subresult):
+                            a += b
+                    else:
+                        result += subresult
+                if not isinstance(result, tuple):
+                    result = (result,)
 
-                for outcoo, delta in izip(self._outmap, sum_of_deltas):
+                for outcoo, delta in izip(self._outmap, result):
                     setattr(labeled_input, outcoo, delta)
                 # always return the entire labeled object, not just the result
                 # since this may be part of another composite transform
                 return labeled_input
         else:
             result = self._transforms[0](*data)
-            if self.n_inputs != self.n_outputs:
-                raise ValueError("Expected equal number of inputs and outputs")
             for tr in self._transforms[1:]:
-                result += tr(*data)
+                subresult = tr(*data)
+                if isinstance(result, tuple):
+                    for a, b in zip(result, subresult):
+                        a += b
+                else:
+                    result += subresult
             return result
 
 

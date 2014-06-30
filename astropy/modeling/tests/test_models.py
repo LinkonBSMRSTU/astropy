@@ -136,8 +136,9 @@ class TestSummedComposite(object):
     def test_inputs_outputs_mismatch(self):
         p2 = models.Polynomial2D(1)
         ch2 = models.Chebyshev2D(1, 1)
-        with pytest.raises(ValueError):
-            SummedCompositeModel([p2, ch2])
+        model = SummedCompositeModel([p2, ch2])
+        x = model(np.arange(10), np.arange(10))
+        assert len(x) == 10
 
 
 def test_pickle():
