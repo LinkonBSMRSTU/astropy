@@ -946,6 +946,13 @@ class _CompositeModel(Model):
             "Composite models do not currently support the .parameters "
             "array.")
 
+    @property
+    def transforms(self):
+        """
+        Get a list of transforms that make up this model.
+        """
+        return self._transforms
+
 
 class SerialCompositeModel(_CompositeModel):
     """
