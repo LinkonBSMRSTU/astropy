@@ -70,16 +70,22 @@ def _normalize_equivalencies(equivalencies):
 
     Parameters
     ----------
-    equivalencies : list of equivalency pairs
+    equivalencies : tuple
+
+      - list of equivalency pairs
+
+      - `True` if list contains conversions between directly
+        equivalent units
 
     Raises
     ------
     ValueError if an equivalency cannot be interpreted
     """
     if equivalencies is None:
-        return []
+        return [], False
 
     normalized = []
+    contains_direct = False
 
     for i, equiv in enumerate(equivalencies):
         if len(equiv) == 2:
@@ -101,7 +107,12 @@ def _normalize_equivalencies(equivalencies):
                 "Invalid equivalence entry {0}: {1!r}".format(i, equiv))
         normalized.append((funit, tunit, a, b))
 
-    return normalized
+        if (not contains_direct and
+            tunit is not None and
+            funit.is_equivalent(tunit)):
+            contains_direct = True
+
+    return normalized, contains_direct
 
 
 class _UnitRegistry(object):
@@ -249,7 +260,7 @@ class _UnitRegistry(object):
             `~astropy.units.equivalencies.dimensionless_angles`.
         """
         # pre-normalize list to help catch mistakes
-        equivalencies = _normalize_equivalencies(equivalencies)
+        equivalencies, _ = _normalize_equivalencies(equivalencies)
         self._equivalencies |= set(equivalencies)
 
 
@@ -599,11 +610,11 @@ class UnitBase(object):
         ------
         ValueError if an equivalency cannot be interpreted
         """
-        normalized = _normalize_equivalencies(equivalencies)
+        normalized, contains_direct = _normalize_equivalencies(equivalencies)
         if equivalencies is not None:
             normalized += get_current_unit_registry().equivalencies
 
-        return normalized
+        return normalized, contains_direct
 
     def __pow__(self, p):
         return CompositeUnit(1, [self], [p])
@@ -715,7 +726,7 @@ class UnitBase(object):
         -------
         bool
         """
-        equivalencies = self._normalize_equivalencies(equivalencies)
+        equivalencies, _ = self._normalize_equivalencies(equivalencies)
 
         if isinstance(other, tuple):
             return any(self.is_equivalent(u, equivalencies=equivalencies)
@@ -841,11 +852,23 @@ class UnitBase(object):
         """
         other = Unit(other)
 
+        equivalencies, contains_direct = self._normalize_equivalencies(equivalencies)
+
+        if contains_direct:
+            try:
+                return self._apply_equivalences(
+                    self, other, equivalencies)
+            except:
+                raise
+
         try:
             scale = self._to(other)
         except UnitsError:
-            return self._apply_equivalences(
-                self, other, self._normalize_equivalencies(equivalencies))
+            if not contains_direct:
+                return self._apply_equivalences(
+                    self, other, equivalencies)
+            else:
+                raise
         return lambda val: scale * _condition_arg(val)
 
     def _to(self, other):
@@ -1093,7 +1116,7 @@ class UnitBase(object):
             better.
         """
         # Pre-normalize the equivalencies list
-        equivalencies = self._normalize_equivalencies(equivalencies)
+        equivalencies, contains_direct = self._normalize_equivalencies(equivalencies)
 
         # The namespace of units to compose into should be filtered to
         # only include units with bases in common with self, otherwise
@@ -1644,11 +1667,9 @@ class UnrecognizedUnit(IrreducibleUnit):
         return not (self == other)
 
     def is_equivalent(self, other, equivalencies=None):
-        self._normalize_equivalencies(equivalencies)
         return self == other
 
     def get_converter(self, other, equivalencies=None):
-        self._normalize_equivalencies(equivalencies)
         raise ValueError(
             "The unit {0!r} is unrecognized.  It can not be converted "
             "to other units.".format(self.name))
