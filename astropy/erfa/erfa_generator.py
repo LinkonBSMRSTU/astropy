@@ -3,13 +3,14 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
 This module's main purpose is to act as a script to create new versions
-of core.pyx when ERFA is updated (or this generator is enhanced).
+of core.c when ERFA is updated (or this generator is enhanced).
 
 `Jinja2 <http://jinja.pocoo.org/>`_ must be installed for this
 module/script to function.
 
-Note that this does *not* currently automate the process of creating structs or
-dtypes for those structs.  They should be added manually in the template file.
+Note that this does *not* currently automate the process of creating
+structs or dtypes for those structs.  They should be added manually in
+the template file.
 """
 
 from __future__ import absolute_import, division, print_function
@@ -420,7 +421,7 @@ def extract_erfa_functions(src):
     with open(erfa_h_filename) as f:
         erfa_h = f.read()
 
-    funcs = []
+    funcs = {}
     section_subsection_functions = re.findall('/\* (\w*)/(\w*) \*/\n(.*?)\n\n',
                                               erfa_h, flags=re.DOTALL|re.MULTILINE)
 
@@ -436,7 +437,7 @@ def extract_erfa_functions(src):
             log.debug("{0}.{1}.{2}...".format(section, subsection, name))
             if multi_file:
                 # easy because it just looks in the file itself
-                funcs.append(Function(name, src))
+                funcs[name] = Function(name, src)
             else:
                 # Have to tell it to look for a declaration matching
                 # the start of the header declaration, otherwise it
@@ -457,7 +458,7 @@ def extract_erfa_functions(src):
                         "A name for a C file wasn't found in the string that "
                         "spawned it.  This should be impossible!")
 
-    return funcs
+    return list(funcs.values())
 
 
 def extract_erfa_constants(src):
@@ -483,9 +484,9 @@ def extract_erfa_constants(src):
     return constants
 
 
-def generate_erfa_pyx(env, funcs, stream=None):
+def generate_erfa_c(env, funcs, stream=None):
     """
-    Generate the core.pyx file from the given template and list of functions.
+    Generate the core.c file from the given template and list of functions.
     """
 
     log.debug("Rendering template")
@@ -506,12 +507,12 @@ def generate_erfa_pyx(env, funcs, stream=None):
     env.filters['postfix'] = postfix
     env.filters['surround'] = surround
 
-    erfa_pyx_in = env.get_template('core.pyx.templ')
+    erfa_c_in = env.get_template('core.c.templ')
 
     if stream is None:
-        return erfa_pyx_in.render(funcs=funcs)
+        return erfa_c_in.render(funcs=funcs)
     else:
-        erfa_pyx_in.stream(funcs=funcs).dump(stream)
+        erfa_c_in.stream(funcs=funcs).dump(stream)
 
 
 def generate_erfa_json(funcs, stream=None):
@@ -546,14 +547,14 @@ def write_erfa_sources(src=DEFAULT_ERFA_LOC, templates=DEFAULT_TEMPLATE_LOC,
     funcs = extract_erfa_functions(src)
     constants = extract_erfa_constants(src)
 
-    erfa_pyx_filename = os.path.join(out, 'core.pyx')
+    erfa_c_filename = os.path.join(out, 'core.c')
     erfa_json_filename = os.path.join(out, 'erfa.json')
     constants_py_filename = os.path.join(out, 'constants.py')
 
     #Prepare the jinja2 templating environment
     env = Environment(loader=FileSystemLoader(templates))
 
-    generate_erfa_pyx(env, funcs, stream=open(erfa_pyx_filename, 'w'))
+    generate_erfa_c(env, funcs, stream=open(erfa_c_filename, 'w'))
     generate_erfa_json(funcs, stream=open(erfa_json_filename, 'w'))
     generate_erfa_constants(env, constants,
                             stream=open(constants_py_filename, 'w'))

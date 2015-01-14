@@ -16,10 +16,10 @@ ERFA_SRC = os.path.abspath(os.path.join(ERFAPKGDIR, os.pardir, os.pardir,
 
 SRC_FILES = glob.glob(os.path.join(ERFA_SRC, '*'))
 SRC_FILES += [os.path.join(ERFAPKGDIR, filename)
-              for filename in ['core.pyx.templ', 'constants.py.templ',
+              for filename in ['core.c.templ', 'constants.py.templ',
                                'erfa_generator.py']]
 
-GEN_FILES = [os.path.join(ERFAPKGDIR, 'core.pyx'),
+GEN_FILES = [os.path.join(ERFAPKGDIR, 'core.c'),
              os.path.join(ERFAPKGDIR, 'constants.py'),
              os.path.join(ERFAPKGDIR, 'erfa.json')]
 
@@ -40,7 +40,7 @@ def preprocess_source():
 
     # Generating the ERFA wrappers should only be done if needed. This also
     # ensures that it is not done for any release tarball since those will
-    # include core.py and core.pyx.
+    # include core.py and core.c.
     if all(os.path.exists(filename) for filename in GEN_FILES):
 
         # Determine modification times
@@ -56,7 +56,7 @@ def preprocess_source():
             import jinja2
         except:
             warnings.warn("jinja2 could not be imported, so the existing ERFA "
-                          "core.py and core.pyx files will be used")
+                          "core.py and core.c files will be used")
             return
 
     name = 'erfa_generator'
@@ -74,7 +74,7 @@ def preprocess_source():
 
 
 def get_extensions():
-    sources = [os.path.join(ERFAPKGDIR, "core.pyx")]
+    sources = [os.path.join(ERFAPKGDIR, "core.c")]
     include_dirs = ['numpy']
     libraries = []
 
