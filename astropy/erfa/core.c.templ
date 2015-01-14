@@ -41,17 +41,28 @@ typedef struct {
 
 static PyObject *Py_{{ func.pyname }}(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    // TODO: Type check input
-    NpyIter *iter = ((PyIterObject *)args)->iter;
+    NpyIter *iter = NULL;
+    int stat_ok = 1;
+    char **dataptrarray = NULL;
+    NpyIter_IterNextFunc *iternext = NULL;
+    int status = 1;
 
     {%- for arg in func.args_by_inout('in|inout|out|ret|stat') %}
     {{ arg.ctype_ptr }} _{{ arg.name }};
     {%- endfor %}
 
-    int stat_ok = 1;
-    char **dataptrarray = NpyIter_GetDataPtrArray(iter);
-    NpyIter_IterNextFunc *iternext = NpyIter_GetIterNext(iter, NULL);
-    int status = 1;
+    if (!PyObject_TypeCheck(args, &NpyIter_Type)) {
+        return NULL;
+    }
+    iter = ((PyIterObject *)args)->iter;
+
+    iternext = NpyIter_GetIterNext(iter, NULL);
+    if (iternext == NULL) {
+        return NULL;
+    }
+    dataptrarray = NpyIter_GetDataPtrArray(iter);
+
+    Py_BEGIN_ALLOW_THREADS
 
     while (status) {
         {%- for arg in func.args_by_inout('in|inout|out') %}
@@ -68,6 +79,8 @@ static PyObject *Py_{{ func.pyname }}(PyObject *self, PyObject *args, PyObject *
         {%- endfor %}
         status = iternext(iter);
     }
+
+    Py_END_ALLOW_THREADS
 
     if (stat_ok) {
         Py_RETURN_TRUE;
