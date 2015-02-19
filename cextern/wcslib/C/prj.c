@@ -54,11 +54,11 @@ const char prj_categories[9][32] =
 
 
 /* Projection codes. */
-const int  prj_ncode = 28;
-const char prj_codes[28][4] =
-  {"AZP", "SZP", "TAN", "STG", "SIN", "ARC", "ZPN", "ZEA", "AIR", "CYP",
-   "CEA", "CAR", "MER", "COP", "COE", "COD", "COO", "SFL", "PAR", "MOL",
-   "AIT", "BON", "PCO", "TSC", "CSC", "QSC", "HPX", "XPH"};
+const int  prj_ncode = 29;
+const char prj_codes[29][4] =
+  {"AZP", "SZP", "TAN", "STG", "SIN", "ARC", "ZPN", "ZEA", "AIR", "TPV",
+   "CYP", "CEA", "CAR", "MER", "COP", "COE", "COD", "COO", "SFL", "PAR",
+   "MOL", "AIT", "BON", "PCO", "TSC", "CSC", "QSC", "HPX", "XPH"};
 
 const int AZP = 101;
 const int SZP = 102;
@@ -69,6 +69,7 @@ const int ARC = 106;
 const int ZPN = 107;
 const int ZEA = 108;
 const int AIR = 109;
+const int TPV = 110;
 const int CYP = 201;
 const int CEA = 202;
 const int CAR = 203;
@@ -384,6 +385,8 @@ struct prjprm *prj;
     status = zeaset(prj);
   } else if (strcmp(prj->code, "AIR") == 0) {
     status = airset(prj);
+  } else if (strcmp(prj->code, "TPV") == 0) {
+    status = tpvset(prj);
   } else if (strcmp(prj->code, "CYP") == 0) {
     status = cypset(prj);
   } else if (strcmp(prj->code, "CEA") == 0) {
@@ -3065,6 +3068,268 @@ int stat[];
   }
 
   return status;
+}
+
+/*============================================================================
+*   TPV: gnomonic with polynomial distortions in the PVi_ma cards.
+*
+*   See: http://fits.gsfc.nasa.gov/registry/tpvwcs/tpv.html
+*
+*   Given:
+*      prj->pv[..]  40 coefficients for xi, and 40 coefficients for eta.
+*
+*   Given and/or returned:
+*      prj->r0      Reset to 180/pi if 0.
+*      prj->phi0    Reset to  0.0 if undefined.
+*      prj->theta0  Reset to 90.0 if undefined.
+*
+*   Returned:
+*      prj->flag     TPV
+*      prj->code    "TPV"
+*      prj->x0      Fiducial offset in x.
+*      prj->y0      Fiducial offset in y.
+*      prj->prjx2s  Pointer to tpvx2s().
+*      prj->prjs2x  Pointer to tpvs2x().
+*      prj->m       The maximum non-zero coefficient in either dimension.
+*===========================================================================*/
+
+int tpvset(prj)
+
+struct prjprm *prj;
+
+{
+  int i;
+
+  if (prj == 0x0) return PRJERR_NULL_POINTER;
+
+  prj->flag = TPV;
+  strcpy(prj->code, "TPV");
+
+  if (prj->r0 == 0.0) prj->r0 = R2D;
+
+  strcpy(prj->name, "gnomonic with polynomial");
+  prj->category  = ZENITHAL;
+  prj->pvrange   = 80;
+  prj->simplezen = 0;
+  prj->equiareal = 0;
+  prj->conformal = 0;
+  prj->global    = 0;
+  prj->divergent = 1;
+
+  prj->m = 0;
+  for (i = 0; i < 40; ++i) {
+    if (prj->pv[i] != 0.0 || prj->pv[40+i] != 0.0) {
+      prj->m = i;
+    }
+  }
+
+  prj->prjx2s = tpvx2s;
+  prj->prjs2x = tpvs2x;
+
+  return prjoff(prj, 0.0, 90.0);
+}
+
+/*--------------------------------------------------------------------------*/
+
+int tpvx2s(prj, nx, ny, sxy, spt, x, y, phi, theta, stat)
+
+struct prjprm *prj;
+int nx, ny, sxy, spt;
+const double x[], y[];
+double phi[], theta[];
+int stat[];
+
+{
+  int mx, my, status;
+  double r, r2, xi2, eta2, xieta, xi_, eta_;
+  int m;
+  register int ix, iy, *statp;
+  register const double *xp, *yp;
+  register double *phip, *thetap;
+  register double xi, eta;
+  double *pv1, *pv2;
+
+
+  /* Initialize. */
+  if (prj == 0x0) return PRJERR_NULL_POINTER;
+  if (prj->flag != TPV) {
+    if ((status = tpvset(prj))) return status;
+  }
+
+  if (ny > 0) {
+    mx = nx;
+    my = ny;
+  } else {
+    mx = 1;
+    my = 1;
+    ny = nx;
+  }
+
+  status = 0;
+
+  yp = y;
+  phip   = phi;
+  thetap = theta;
+  statp  = stat;
+  pv1 = prj->pv;
+  pv2 = prj->pv + 40;
+  m = prj->m;
+  for (iy = 0; iy < ny; iy++, yp += sxy) {
+
+    eta = *yp;
+    xp = x;
+    for (ix = 0; ix < mx; ix++, xp += sxy, phip += spt, thetap += spt) {
+      xi = *xp;
+      r = sqrt(xi*xi + eta*eta);
+
+      xi2 = xi*xi;
+      eta2 = eta*eta;
+      xieta = xi*eta;
+      r2 = r*r;
+
+      xi_ = 0.0;
+      eta_ = 0.0;
+
+      /* Switch on the highest non-zero coefficient.  Each part deliberately
+         falls through to the next. */
+      switch(m) {
+      case 39:
+      case 38:
+      case 37:
+      case 36:
+      case 35:
+      case 34:
+      case 33:
+      case 32:
+      case 31:
+        /* Seventh order */
+        xi_ += pv1[31]*xi2*xi2*xi2*xi + pv1[32]*xi2*xi2*xi2*eta +
+          pv1[33]*xi2*xi2*xi*eta2 + pv1[34]*xi2*xi2*eta2*eta +
+          pv1[35]*xi2*xi*eta2*eta2 + pv1[36]*xi2*eta2*eta2*eta +
+          pv1[37]*xi*eta2*eta2*eta2 + pv1[38]*eta2*eta2*eta2*eta +
+          pv1[39]*r2*r2*r2*r;
+        eta_ += pv2[31]*eta2*eta2*eta2*eta + pv2[32]*eta2*eta2*eta2*xi +
+          pv2[33]*eta2*eta2*eta*xi2 + pv2[34]*eta2*eta2*xi2*xi +
+          pv2[35]*eta2*eta*xi2*xi2 + pv2[36]*eta2*xi2*xi2*xi +
+          pv2[37]*eta*xi2*xi2*xi2 + pv2[38]*xi2*xi2*xi2*xi +
+          pv2[39]*r2*r2*r2*r;
+
+      case 30:
+      case 29:
+      case 28:
+      case 27:
+      case 26:
+      case 25:
+      case 24:
+        /* Sixth order */
+        xi_ += pv1[24]*xi2*xi2*xi2 + pv1[25]*xi2*xi2*xi*eta +
+          pv1[26]*xi2*xi2*eta2 + pv1[27]*xi2*xi*eta2*eta +
+          pv1[28]*xi2*eta2*eta2 + pv1[29]*xi*eta2*eta2*eta +
+          pv1[30]*eta2*eta2*eta2;
+        eta_ += pv2[24]*eta2*eta2*eta2 + pv2[25]*eta2*eta2*eta*xi +
+          pv2[26]*eta2*eta2*xi2 + pv2[27]*eta2*eta*xi2*xi +
+          pv2[28]*eta2*xi2*xi2 + pv2[29]*eta*xi2*xi2*xi +
+          pv2[30]*xi2*xi2*xi2;
+
+      case 23:
+      case 22:
+      case 21:
+      case 20:
+      case 19:
+      case 18:
+      case 17:
+        /* Fifth order */
+        xi_ += pv1[17]*xi2*xi2*xi + pv1[18]*xi2*xi2*eta +
+          pv1[19]*xi2*xi*eta2 + pv1[20]*xi2*eta2*eta +
+          pv1[21]*xi*eta2*eta2 + pv1[22]*eta2*eta2*eta +
+          pv1[23]*r2*r2*r;
+        eta_ += pv2[17]*eta2*eta2*eta + pv2[18]*eta2*eta2*xi +
+          pv2[19]*eta2*eta*xi2 + pv2[20]*eta2*xi2*xi +
+          pv2[21]*eta*xi2*xi2 + pv2[22]*xi2*xi2*xi +
+          pv2[23]*r2*r2*r;
+
+      case 16:
+      case 15:
+      case 14:
+      case 13:
+      case 12:
+        /* Fourth order */
+        xi_ += pv1[12]*xi2*xi2 + pv1[13]*xi2*xi*eta + pv1[14]*xi2*eta2 +
+          pv1[15]*xi*eta*eta2 + pv1[16]*eta2*eta2;
+        eta_ += pv2[12]*eta2*eta2 + pv2[13]*eta2*eta*xi + pv2[14]*xi2*eta2 +
+          pv2[15]*eta*xi*xi2 + pv2[16]*xi2*xi2;
+
+      case 11:
+      case 10:
+      case 9:
+      case 8:
+      case 7:
+        /* Third order */
+        xi_ += pv1[7]*xi2*xi + pv1[8]*xi2*eta + pv1[9]*xi*eta2 +
+          pv1[10]*eta2*eta + pv1[11]*r*r2;
+        eta_ += pv2[7]*eta2*eta + pv2[8]*eta2*xi + pv2[9]*eta*xi2 +
+          pv2[10]*xi2*xi + pv2[11]*r*r2;
+
+      case 6:
+      case 5:
+      case 4:
+        /* Second order */
+        xi_ += pv1[4]*xi2 + pv1[5]*xieta + pv1[6]*eta2;
+        eta_ += pv2[4]*eta2 + pv2[5]*xieta + pv2[6]*xi2;
+
+      case 3:
+      case 2:
+      case 1:
+      case 0:
+        /* First order */
+        xi_ += pv1[0] + pv1[1]*xi + pv1[2]*eta + pv1[3]*r;
+        eta_ += pv2[0] + pv2[1]*eta + pv2[2]*xi + pv2[3]*r;
+      }
+
+      /* Now do the regular TAN projection */
+      xi_ += prj->x0;
+      r = sqrt(xi_*xi_ + eta_*eta_);
+      if (r == 0.0) {
+        *phip = 0.0;
+      } else {
+        *phip = atan2d(xi_, -eta_);
+      }
+
+      *thetap = atan2d(prj->r0, r);
+
+      *(statp++) = 0;
+    }
+  }
+
+  /* Do bounds checking on the native coordinates. */
+  if (prj->bounds&4 && prjbchk(1.0e-13, nx, my, spt, phi, theta, stat)) {
+    if (!status) status = PRJERR_BAD_PIX_SET("tpvx2s");
+  }
+
+  return status;
+}
+
+/*--------------------------------------------------------------------------*/
+
+int tpvs2x(prj, nphi, ntheta, spt, sxy, phi, theta, x, y, stat)
+
+struct prjprm *prj;
+int nphi, ntheta, spt, sxy;
+const double phi[], theta[];
+double x[], y[];
+int stat[];
+
+{
+  int status;
+
+  /* Initialize. */
+  if (prj == 0x0) return PRJERR_NULL_POINTER;
+  if (prj->flag != TPV) {
+    if ((status = tpvset(prj))) return status;
+  }
+
+  /* Always an error: the inverse is not implemented. */
+  return PRJERR_BAD_PARAM;
 }
 
 /*============================================================================

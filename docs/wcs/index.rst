@@ -151,6 +151,7 @@ through `Wcsprm.cunit <astropy.wcs.Wcsprm.cunit>`), for example,
 - ``ZPN``: zenithal/azimuthal polynomial
 - ``ZEA``: zenithal/azimuthal equal area
 - ``AIR``: Airy's projection
+- ``TPV``: gnomonic with polynomial distortion
 - ``CYP``: cylindrical perspective
 - ``CEA``: cylindrical equal area
 - ``CAR``: plate carrée

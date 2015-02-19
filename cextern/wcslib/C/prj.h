@@ -82,6 +82,7 @@
 *   - zpnset(), zpnx2s(), zpns2x():   ZPN (zenithal/azimuthal polynomial)
 *   - zeaset(), zeax2s(), zeas2x():   ZEA (zenithal/azimuthal equal area)
 *   - airset(), airx2s(), airs2x():   AIR (Airy)
+*   - tpvset(), tpvx2s(), tpvs2x():   TPV (gnomonic with polynomial distortion)
 *   - cypset(), cypx2s(), cyps2x():   CYP (cylindrical perspective)
 *   - ceaset(), ceax2s(), ceas2x():   CEA (cylindrical equal area)
 *   - carset(), carx2s(), cars2x():   CAR (Plate carree)
@@ -111,7 +112,7 @@
 * The projection routines do not explicitly check that theta lies within the
 * range [-90,90].  They do check for any value of theta that produces an
 * invalid argument to the projection equations (e.g. leading to division by
-* zero).  The projection routines for AZP, SZP, TAN, SIN, ZPN, and COP also
+* zero).  The projection routines for AZP, SZP, TAN, SIN, ZPN, COP and TPV also
 * return error 2 if (phi,theta) corresponds to the overlapped (far) side of
 * the projection but also return the corresponding value of (x,y).  This
 * strict bounds checking may be relaxed at any time by setting
@@ -478,7 +479,7 @@
 *   int bounds
 *     (Given) Controls bounds checking.  If bounds&1 then enable strict bounds
 *     checking for the spherical-to-Cartesian (s2x) transformation for the
-*     AZP, SZP, TAN, SIN, ZPN, and COP projections.  If bounds&2 then enable
+*     AZP, SZP, TAN, SIN, ZPN, COP and TPV projections.  If bounds&2 then enable
 *     strict bounds checking for the Cartesian-to-spherical transformation
 *     (x2s) for the HPX and XPH projections.  If bounds&4 then the Cartesian-
 *     to-spherical transformations (x2s) will invoke prjbchk() to perform
@@ -597,7 +598,7 @@ extern "C" {
 
 
 /* Total number of projection parameters; 0 to PVN-1. */
-#define PVN 30
+#define PVN 80
 
 extern const char *prj_errmsg[];
 
@@ -616,7 +617,7 @@ extern const int CONIC, CONVENTIONAL, CYLINDRICAL, POLYCONIC,
 extern const char prj_categories[9][32];
 
 extern const int  prj_ncode;
-extern const char prj_codes[28][4];
+extern const char prj_codes[29][4];
 
 #ifdef PRJX2S_ARGS
 #undef PRJX2S_ARGS
@@ -724,6 +725,10 @@ int zeas2x(PRJS2X_ARGS);
 int airset(struct prjprm *prj);
 int airx2s(PRJX2S_ARGS);
 int airs2x(PRJS2X_ARGS);
+
+int tpvset(struct prjprm *prj);
+int tpvx2s(PRJX2S_ARGS);
+int tpvs2x(PRJS2X_ARGS);
 
 int cypset(struct prjprm *prj);
 int cypx2s(PRJX2S_ARGS);

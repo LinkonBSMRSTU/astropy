@@ -428,7 +428,7 @@
 * Given:
 *   bounds    int       If bounds&1 then enable strict bounds checking for the
 *                       spherical-to-Cartesian (s2x) transformation for the
-*                       AZP, SZP, TAN, SIN, ZPN, and COP projections.
+*                       AZP, SZP, TAN, SIN, ZPN, COP and TPV projections.
 *
 *                       If bounds&2 then enable strict bounds checking for the
 *                       Cartesian-to-spherical (x2s) transformation for the

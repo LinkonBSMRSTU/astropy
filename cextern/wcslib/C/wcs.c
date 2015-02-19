@@ -1687,48 +1687,64 @@ int wcsset(struct wcsprm *wcs)
     wcscel->ref[3] = wcs->latpole;
 
     /* PVi_ma keyvalues. */
-    for (k = 0; k < wcs->npv; k++) {
-      i = wcs->pv[k].i - 1;
-      m = wcs->pv[k].m;
-
-      if (i == -1) {
-        /* From a PROJPn keyword. */
-        i = wcs->lat;
-      }
-
-      if (i == wcs->lat) {
-        /* PVi_ma associated with latitude axis. */
-        if (m < 30) {
-          wcsprj->pv[m] = wcs->pv[k].value;
+    if (strncmp(wcs->ctype[wcs->lng]+5, "TPV", 3) == 0) {
+        for (k = 0; k < 80; k++) {
+            /* Set defaults */
+            wcsprj->pv[k] = 0.0;
         }
+        wcsprj->pv[1] = 1.0;
+        wcsprj->pv[41] = 1.0;
 
-      } else if (i == wcs->lng) {
-        /* PVi_ma associated with longitude axis. */
-        switch (m) {
-        case 0:
-          wcscel->offset = (wcs->pv[k].value != 0.0);
-          break;
-        case 1:
-          wcscel->phi0   = wcs->pv[k].value;
-          break;
-        case 2:
-          wcscel->theta0 = wcs->pv[k].value;
-          break;
-        case 3:
-          /* If present, overrides LONPOLEa. */
-          wcscel->ref[2] = wcs->pv[k].value;
-          break;
-        case 4:
-          /* If present, overrides LATPOLEa. */
-          wcscel->ref[3] = wcs->pv[k].value;
-          break;
-        default:
-          return wcserr_set(WCSERR_SET(WCSERR_BAD_COORD_TRANS),
-            "PV%i_%i%s: Unrecognized coordinate transformation parameter",
-            i+1, m, wcs->alt);
-          break;
+        for (k = 0; k < wcs->npv; k++) {
+            i = wcs->pv[k].i - 1;
+            m = wcs->pv[k].m;
+
+            wcsprj->pv[i*40 + m] = wcs->pv[k].value;
         }
-      }
+    } else {
+        for (k = 0; k < wcs->npv; k++) {
+            i = wcs->pv[k].i - 1;
+            m = wcs->pv[k].m;
+
+            if (i == -1) {
+                /* From a PROJPn keyword. */
+                i = wcs->lat;
+            }
+
+            if (i == wcs->lat) {
+                /* PVi_ma associated with latitude axis. */
+                if (m < 30) {
+                    wcsprj->pv[m] = wcs->pv[k].value;
+                }
+
+            } else if (i == wcs->lng) {
+                /* PVi_ma associated with longitude axis. */
+                switch (m) {
+                case 0:
+                    wcscel->offset = (wcs->pv[k].value != 0.0);
+                    break;
+                case 1:
+                    wcscel->phi0   = wcs->pv[k].value;
+                    break;
+                case 2:
+                    wcscel->theta0 = wcs->pv[k].value;
+                    break;
+                case 3:
+                    /* If present, overrides LONPOLEa. */
+                    wcscel->ref[2] = wcs->pv[k].value;
+                    break;
+                case 4:
+                    /* If present, overrides LATPOLEa. */
+                    wcscel->ref[3] = wcs->pv[k].value;
+                    break;
+                default:
+                    return wcserr_set(WCSERR_SET(WCSERR_BAD_COORD_TRANS),
+                                      "PV%i_%i%s: Unrecognized coordinate transformation parameter",
+                                      i+1, m, wcs->alt);
+                    break;
+                }
+            }
+        }
     }
 
     /* Do simple alias translations. */
