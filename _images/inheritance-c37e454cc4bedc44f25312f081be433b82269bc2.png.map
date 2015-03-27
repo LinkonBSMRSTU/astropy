@@ -1,0 +1,20 @@
+<map id="inheritance0a7985b00b" name="inheritance0a7985b00b">
+<area shape="rect" id="node1" href="../api/astropy.visualization.AsinhStretch.html#astropy.visualization.AsinhStretch" title="An asinh stretch." alt="" coords="426,5,530,31"/>
+<area shape="rect" id="node2" href="../api/astropy.visualization.BaseStretch.html#astropy.visualization.BaseStretch" title="Base class for the stretch classes, which, when called with an array of" alt="" coords="197,228,299,253"/>
+<area shape="rect" id="node7" href="../api/astropy.visualization.ContrastBiasStretch.html#astropy.visualization.ContrastBiasStretch" title="A stretch that takes into account contrast and bias." alt="" coords="403,55,553,80"/>
+<area shape="rect" id="node8" href="../api/astropy.visualization.HistEqStretch.html#astropy.visualization.HistEqStretch" title="A histogram equalization stretch." alt="" coords="423,104,533,129"/>
+<area shape="rect" id="node9" href="../api/astropy.visualization.LinearStretch.html#astropy.visualization.LinearStretch" title="A linear stretch." alt="" coords="424,153,532,179"/>
+<area shape="rect" id="node10" href="../api/astropy.visualization.LogStretch.html#astropy.visualization.LogStretch" title="A log stretch." alt="" coords="432,203,524,228"/>
+<area shape="rect" id="node14" href="../api/astropy.visualization.PowerDistStretch.html#astropy.visualization.PowerDistStretch" title="An alternative power stretch." alt="" coords="412,252,544,277"/>
+<area shape="rect" id="node15" href="../api/astropy.visualization.PowerStretch.html#astropy.visualization.PowerStretch" title="A power stretch." alt="" coords="425,301,531,327"/>
+<area shape="rect" id="node16" href="../api/astropy.visualization.SinhStretch.html#astropy.visualization.SinhStretch" title="A sinh stretch." alt="" coords="429,351,527,376"/>
+<area shape="rect" id="node17" href="../api/astropy.visualization.SqrtStretch.html#astropy.visualization.SqrtStretch" title="A square root stretch." alt="" coords="430,400,526,425"/>
+<area shape="rect" id="node3" href="../api/astropy.visualization.AsymmetricPercentileInterval.html#astropy.visualization.AsymmetricPercentileInterval" title="Interval based on a keeping a specified fraction of pixels (can be asymmetric)." alt="" coords="373,449,583,475"/>
+<area shape="rect" id="node13" href="../api/astropy.visualization.PercentileInterval.html#astropy.visualization.PercentileInterval" title="Interval based on a keeping a specified fraction of pixels." alt="" coords="631,449,763,475"/>
+<area shape="rect" id="node4" href="../api/astropy.visualization.BaseInterval.html#astropy.visualization.BaseInterval" title="Base class for the interval classes, which, when called with an array of" alt="" coords="197,473,299,499"/>
+<area shape="rect" id="node11" href="../api/astropy.visualization.ManualInterval.html#astropy.visualization.ManualInterval" title="Interval based on user&#45;specified values." alt="" coords="421,499,535,524"/>
+<area shape="rect" id="node12" href="../api/astropy.visualization.MinMaxInterval.html#astropy.visualization.MinMaxInterval" title="Interval based on the minimum and maximum values in the data." alt="" coords="419,548,537,573"/>
+<area shape="rect" id="node5" href="../api/astropy.visualization.BaseTransform.html#astropy.visualization.BaseTransform" title="A transformation object." alt="" coords="5,473,123,499"/>
+<area shape="rect" id="node6" href="../api/astropy.visualization.CompositeTransform.html#astropy.visualization.CompositeTransform" title="A combination of two transforms." alt="" coords="171,523,325,548"/>
+<area shape="rect" id="node18" href="../api/astropy.visualization.SquaredStretch.html#astropy.visualization.SquaredStretch" title="A convenience class for a power stretch of 2." alt="" coords="635,301,758,327"/>
+</map>

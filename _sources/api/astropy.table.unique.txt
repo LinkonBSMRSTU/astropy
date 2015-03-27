@@ -1,0 +1,10 @@
+
+.. include:: ../table/references.txt
+
+
+unique
+====================
+
+.. currentmodule:: astropy.table
+
+.. autofunction:: unique

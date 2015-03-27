@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_function_with_signature &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="up" title="Astropy Core Package Utilities (astropy.utils)" href="../utils/index.html" />
+    <link rel="next" title="resolve_name" href="astropy.utils.introspection.resolve_name.html" />
+    <link rel="prev" title="sharedmethod" href="astropy.utils.decorators.sharedmethod.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="astropy.utils.introspection.resolve_name.html" title="resolve_name">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="astropy.utils.decorators.sharedmethod.html" title="sharedmethod">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../utils/index.html" accesskey="U">Astropy Core Package Utilities (<tt class="docutils literal"><span class="pre">astropy.utils</span></tt>)</a> &raquo;</li>
+      
+      <li>make_function_with_signature</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="make-function-with-signature">
+<h1>make_function_with_signature<a class="headerlink" href="#make-function-with-signature" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="astropy.utils.codegen.make_function_with_signature">
+<tt class="descclassname">astropy.utils.codegen.</tt><tt class="descname">make_function_with_signature</tt><big>(</big><em>func</em>, <em>args=()</em>, <em>kwargs={}</em>, <em>varargs=None</em>, <em>varkwargs=None</em>, <em>name=None</em><big>)</big><a class="reference internal" href="../_modules/astropy/utils/codegen.html#make_function_with_signature"><span class="viewcode-link">[source]</span></a><a class="reference external" href="http://github.com/astropy/astropy/tree/master/astropy/utils/codegen.py#L30" title="Push the Edit button on the next page"><span class="edit-on-github viewcode-link">&nbsp;[edit on github]</span></a><a class="headerlink" href="#astropy.utils.codegen.make_function_with_signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new function from an existing function but with the desired
+signature.</p>
+<p>The desired signature must of course be compatible with the arguments
+actually accepted by the input function.</p>
+<p>The <tt class="docutils literal"><span class="pre">args</span></tt> are strings that should be the names of the positional
+arguments.  <tt class="docutils literal"><span class="pre">kwargs</span></tt> can map names of keyword arguments to their
+default values.  It may be either a <tt class="docutils literal"><span class="pre">dict</span></tt> or a list of <tt class="docutils literal"><span class="pre">(keyword,</span>
+<span class="pre">default)</span></tt> tuples.</p>
+<p>If <tt class="docutils literal"><span class="pre">varargs</span></tt> is a string it is added to the positional arguments as
+<tt class="docutils literal"><span class="pre">*&lt;varargs&gt;</span></tt>.  Likewise <tt class="docutils literal"><span class="pre">varkwargs</span></tt> can be the name for a variable
+keyword argument placeholder like <tt class="docutils literal"><span class="pre">**&lt;varkwargs&gt;</span></tt>.</p>
+<p>If not specified the name of the new function is taken from the original
+function.  Otherwise, the <tt class="docutils literal"><span class="pre">name</span></tt> argument can be used to specify a new
+name.</p>
+<p>Note, the names may only be valid Python variable names.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">make_function_with_signature</a></li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/api/astropy.utils.codegen.make_function_with_signature.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/api/astropy.utils.codegen.make_function_with_signature.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

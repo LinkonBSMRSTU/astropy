@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Transforming to Galactocentric coordinates &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="up" title="Astronomical Coordinate Systems (astropy.coordinates)" href="index.html" />
+    <link rel="next" title="cartesian_to_spherical" href="../api/astropy.coordinates.cartesian_to_spherical.html" />
+    <link rel="prev" title="Important Definitions" href="definitions.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="../api/astropy.coordinates.cartesian_to_spherical.html" title="cartesian_to_spherical">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="definitions.html" title="Important Definitions">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="index.html" accesskey="U">Astronomical Coordinate Systems (<tt class="docutils literal"><span class="pre">astropy.coordinates</span></tt>)</a> &raquo;</li>
+      
+      <li>Transforming to Galactocentric coordinates</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="transforming-to-galactocentric-coordinates">
+<span id="coordinates-galactocentric"></span><h1>Transforming to Galactocentric coordinates<a class="headerlink" href="#transforming-to-galactocentric-coordinates" title="Permalink to this headline">¶</a></h1>
+<p>This document describes the mathematics behind the transformation from
+<a class="reference internal" href="../api/astropy.coordinates.ICRS.html#astropy.coordinates.ICRS" title="astropy.coordinates.ICRS"><tt class="xref py py-class docutils literal"><span class="pre">ICRS</span></tt></a> to <a class="reference internal" href="../api/astropy.coordinates.Galactocentric.html#astropy.coordinates.Galactocentric" title="astropy.coordinates.Galactocentric"><tt class="xref py py-obj docutils literal"><span class="pre">Galactocentric</span></tt></a>
+coordinates. For examples of how to use this transformation in code, see
+the <em>Examples</em> section of the
+<a class="reference internal" href="../api/astropy.coordinates.Galactocentric.html#astropy.coordinates.Galactocentric" title="astropy.coordinates.Galactocentric"><tt class="xref py py-obj docutils literal"><span class="pre">Galactocentric</span></tt></a> class documentation.</p>
+<p>We assume that we start with a 3D position in the ICRS reference frame:
+a Right Ascension, Declination, and heliocentric distance,
+<img class="math" src="../_images/math/30bb6c7803df6bf28961fc2ffba1e417a76e0b8c.png" alt="(\alpha, \delta, d)"/>. We can trivially convert this to a
+Cartesian position using the standard transformation from Cartesian to
+spherical coordinates:</p>
+<div class="math">
+<p><img src="../_images/math/9a7b2046e46018351467b79869b582e45cd9b2f6.png" alt="\begin{aligned}
+    x_{\rm icrs} &amp;= d\cos{\alpha}\cos{\delta}\\
+    y_{\rm icrs} &amp;= d\sin{\alpha}\cos{\delta}\\
+    z_{\rm icrs} &amp;= d\sin{\delta}\\
+    \boldsymbol{r}_{\rm icrs} &amp;= \begin{pmatrix}
+      x_{\rm icrs}\\
+      y_{\rm icrs}\\
+      z_{\rm icrs}
+    \end{pmatrix}\end{aligned}"/></p>
+</div><p>The first transformations will rotate the <img class="math" src="../_images/math/348ea01d606c30a0445685c5e10733f8819016a2.png" alt="x_{\rm icrs}"/> axis so
+that the new <img class="math" src="../_images/math/1ba6dff92a6534953b79b494fd0418c4ea6e7be3.png" alt="x'"/> axis points towards the Galactic Center (GC),
+specified by the ICRS position
+<img class="math" src="../_images/math/84ea85070fcb11e0c88bb2cec38c3f2311aed57c.png" alt="(\alpha_{\rm GC}, \delta_{\rm GC})"/>:</p>
+<div class="math">
+<p><img src="../_images/math/5df00196e79c577bfae1bb68ad77b58e102712e8.png" alt="\begin{aligned}
+    \boldsymbol{R}_1 &amp;= \begin{bmatrix}
+      \cos\delta_{\rm GC}&amp; 0 &amp; -\sin\delta_{\rm GC}\\
+      0 &amp; 1 &amp; 0 \\
+      \sin\delta_{\rm GC}&amp; 0 &amp; \cos\delta_{\rm GC}\end{bmatrix}\\
+    \boldsymbol{R}_2 &amp;=
+    \begin{bmatrix}
+      \cos\alpha_{\rm GC}&amp; \sin\alpha_{\rm GC}&amp; 0\\
+      -\sin\alpha_{\rm GC}&amp; \cos\alpha_{\rm GC}&amp; 0\\
+      0 &amp; 0 &amp; 1
+    \end{bmatrix}.\end{aligned}"/></p>
+</div><p>The transformation thus far has aligned the <img class="math" src="../_images/math/1ba6dff92a6534953b79b494fd0418c4ea6e7be3.png" alt="x'"/> axis with the
+vector pointing from the Sun to the GC, but the <img class="math" src="../_images/math/6b041f00f638c0ac3474feb8ee3db93a1fd6df57.png" alt="y'"/> and
+<img class="math" src="../_images/math/8adfd70f0600a96575f571714412f8040b54b01b.png" alt="z'"/> axes point in an arbitrary direction. We adopt the
+orientation of the Galactic plane as the normal to the north pole of
+Galactic coordinates defined by the IAU
+(<a class="reference external" href="http://adsabs.harvard.edu/abs/1960MNRAS.121..164B">Blaauw et. al. 1960</a>).
+This extra “roll” angle, <img class="math" src="../_images/math/9172efc523d7488d4c3ed299d0be813de01503b8.png" alt="\eta"/>, was measured by transforming a grid
+of points along <img class="math" src="../_images/math/0da666abd8314ca395496380bf4b5e78b9bd191d.png" alt="l=0"/> to this interim frame and minimizing the square
+of their <img class="math" src="../_images/math/6b041f00f638c0ac3474feb8ee3db93a1fd6df57.png" alt="y'"/> positions. We find:</p>
+<div class="math">
+<p><img src="../_images/math/1f9f84d2ff9b358f8c88ddcd1c01726fad4e93a2.png" alt="\begin{aligned}
+    \eta &amp;= 148.5986320^\circ\\
+    \boldsymbol{R}_3 &amp;=
+    \begin{bmatrix}
+      1 &amp; 0 &amp; 0\\
+      0 &amp; \cos\eta &amp; \sin\eta\\
+      0 &amp; -\sin\eta &amp; \cos\eta
+    \end{bmatrix}\end{aligned}"/></p>
+</div><p>The full rotation matrix thus far is:</p>
+<div class="math">
+<p><img src="../_images/math/d771647106f529e68e4b21942b8d3856630724d5.png" alt="\begin{gathered}
+    \boldsymbol{R} = \boldsymbol{R}_3 \boldsymbol{R}_1 \boldsymbol{R}_2 = \\
+    \begin{bmatrix}
+      \cos\alpha_{\rm GC}\cos\delta_{\rm GC}&amp; \cos\delta_{\rm GC}\sin\alpha_{\rm GC}&amp; -\sin\delta_{\rm GC}\\
+      \cos\alpha_{\rm GC}\sin\delta_{\rm GC}\sin\eta - \sin\alpha_{\rm GC}\cos\eta &amp; \sin\alpha_{\rm GC}\sin\delta_{\rm GC}\sin\eta + \cos\alpha_{\rm GC}\cos\eta &amp; \cos\delta_{\rm GC}\sin\eta\\
+      \cos\alpha_{\rm GC}\sin\delta_{\rm GC}\cos\eta + \sin\alpha_{\rm GC}\sin\eta &amp; \sin\alpha_{\rm GC}\sin\delta_{\rm GC}\cos\eta - \cos\alpha_{\rm GC}\sin\eta &amp; \cos\delta_{\rm GC}\cos\eta
+    \end{bmatrix}\end{gathered}"/></p>
+</div><p>With the rotated position vector
+<img class="math" src="../_images/math/57ebb59760af6d956f3d018a954424fb3398622c.png" alt="\boldsymbol{R}\boldsymbol{r}_{\rm icrs}"/>, we can now subtract the
+distance to the GC, <img class="math" src="../_images/math/e67657f0b35e48b608f4f67ad44ac80680af6f27.png" alt="d_{\rm GC}"/>, which is purely along the
+<img class="math" src="../_images/math/1ba6dff92a6534953b79b494fd0418c4ea6e7be3.png" alt="x'"/> axis:</p>
+<div class="math">
+<p><img src="../_images/math/bcf5565cd8786d535c9d49b106632564697bb9e8.png" alt="\begin{aligned}
+    \boldsymbol{r}' &amp;= \boldsymbol{R}\boldsymbol{r}_{\rm icrs} - d_{\rm GC}\hat{\boldsymbol{x}}_{\rm GC}.\end{aligned}"/></p>
+</div><p>where <img class="math" src="../_images/math/1cede8ca1d94379d9bb5d2fe9360fba960a61c1a.png" alt="\hat{\boldsymbol{x}}_{\rm GC} = (1,0,0)^{\mathsf{T}}"/>.</p>
+<p>The final transformation is to account for the height of the Sun above
+the Galactic midplane by rotating about the final <img class="math" src="../_images/math/28ae58dc989fc02112c4398a5690b8b2751ffb25.png" alt="y''"/> axis by
+the angle <img class="math" src="../_images/math/f1d2d89778066044099215ce88c3aa54b7fda2a9.png" alt="\theta= \sin^{-1}(z_\odot / d_{\rm GC})"/>:</p>
+<div class="math">
+<p><img src="../_images/math/b30eb9a26db1d88e1df8ccd7d78f66f10fcd80c1.png" alt="\begin{aligned}
+    \boldsymbol{H} &amp;=
+    \begin{bmatrix}
+      \cos\theta &amp; 0 &amp; \sin\theta\\
+      0 &amp; 1 &amp; 0\\
+      -\sin\theta &amp; 0 &amp; \cos\theta
+    \end{bmatrix}\end{aligned}"/></p>
+</div><p>where <img class="math" src="../_images/math/d9e648e8eab3b609c3e7d99da49d143a2d338323.png" alt="z_\odot"/> is the measured height of the Sun above the
+midplane.</p>
+<p>The full transformation is then:</p>
+<div class="math">
+<p><img src="../_images/math/b53451d84a8af25de366f8ca60807a0b6a8d75e7.png" alt="\boldsymbol{r}_{\rm GC} = \boldsymbol{H} \left( \boldsymbol{R}\boldsymbol{r}_{\rm icrs} - d_{\rm GC}\hat{\boldsymbol{x}}_{\rm GC}\right)."/></p>
+</div></div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Transforming to Galactocentric coordinates</a></li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/coordinates/galactocentric.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/coordinates/galactocentric.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

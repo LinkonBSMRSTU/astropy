@@ -1,0 +1,44 @@
+
+
+Identity
+==================================
+
+.. currentmodule:: astropy.modeling.mappings
+
+.. autoclass:: Identity
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~Identity.inverse
+
+   
+   
+
+   
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: inverse
+
+   
+   
+
+   
+   
+   

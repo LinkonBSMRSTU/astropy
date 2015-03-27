@@ -1,0 +1,10 @@
+
+.. include:: ../coordinates/references.txt
+
+
+get_sun
+===========================
+
+.. currentmodule:: astropy.coordinates
+
+.. autofunction:: get_sun

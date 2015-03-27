@@ -1,0 +1,671 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.utils.decorators &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.utils.decorators</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;Sundry function and class decorators.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">.codegen</span> <span class="kn">import</span> <span class="n">make_function_with_signature</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AstropyDeprecationWarning</span><span class="p">,</span>
+                         <span class="n">AstropyPendingDeprecationWarning</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..extern</span> <span class="kn">import</span> <span class="n">six</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;deprecated&#39;</span><span class="p">,</span> <span class="s">&#39;deprecated_attribute&#39;</span><span class="p">,</span> <span class="s">&#39;lazyproperty&#39;</span><span class="p">,</span>
+           <span class="s">&#39;sharedmethod&#39;</span><span class="p">,</span> <span class="s">&#39;wraps&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="deprecated"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.deprecated.html#astropy.units.deprecated">[docs]</a><span class="k">def</span> <span class="nf">deprecated</span><span class="p">(</span><span class="n">since</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">pending</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+               <span class="n">obj_type</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to mark a function or class as deprecated.</span>
+
+<span class="sd">    To mark an attribute as deprecated, use `deprecated_attribute`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    since : str</span>
+<span class="sd">        The release at which this API became deprecated.  This is</span>
+<span class="sd">        required.</span>
+
+<span class="sd">    message : str, optional</span>
+<span class="sd">        Override the default deprecation message.  The format</span>
+<span class="sd">        specifier ``func`` may be used for the name of the function,</span>
+<span class="sd">        and ``alternative`` may be used in the deprecation message</span>
+<span class="sd">        to insert the name of an alternative to the deprecated</span>
+<span class="sd">        function. ``obj_type`` may be used to insert a friendly name</span>
+<span class="sd">        for the type of object being deprecated.</span>
+
+<span class="sd">    name : str, optional</span>
+<span class="sd">        The name of the deprecated function or class; if not provided</span>
+<span class="sd">        the name is automatically determined from the passed in</span>
+<span class="sd">        function or class, though this is useful in the case of</span>
+<span class="sd">        renamed functions, where the new function is just assigned to</span>
+<span class="sd">        the name of the deprecated function.  For example::</span>
+
+<span class="sd">            def new_function():</span>
+<span class="sd">                ...</span>
+<span class="sd">            oldFunction = new_function</span>
+
+<span class="sd">    alternative : str, optional</span>
+<span class="sd">        An alternative function or class name that the user may use in</span>
+<span class="sd">        place of the deprecated object.  The deprecation warning will</span>
+<span class="sd">        tell the user about this alternative if provided.</span>
+
+<span class="sd">    pending : bool, optional</span>
+<span class="sd">        If True, uses a AstropyPendingDeprecationWarning instead of a</span>
+<span class="sd">        AstropyDeprecationWarning.</span>
+
+<span class="sd">    obj_type : str, optional</span>
+<span class="sd">        The type of this object, if the automatically determined one</span>
+<span class="sd">        needs to be overridden.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">method_types</span> <span class="o">=</span> <span class="p">(</span><span class="nb">classmethod</span><span class="p">,</span> <span class="nb">staticmethod</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deprecate_doc</span><span class="p">(</span><span class="n">old_doc</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a given docstring with a deprecation message prepended</span>
+<span class="sd">        to it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">old_doc</span><span class="p">:</span>
+            <span class="n">old_doc</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">old_doc</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">old_doc</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">new_doc</span> <span class="o">=</span> <span class="p">((</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">.. deprecated:: </span><span class="si">%(since)s</span><span class="s">&#39;</span>
+                    <span class="s">&#39;</span><span class="se">\n</span><span class="s">    </span><span class="si">%(message)s</span><span class="se">\n\n</span><span class="s">&#39;</span> <span class="o">%</span>
+                    <span class="p">{</span><span class="s">&#39;since&#39;</span><span class="p">:</span> <span class="n">since</span><span class="p">,</span> <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">strip</span><span class="p">()})</span> <span class="o">+</span> <span class="n">old_doc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">old_doc</span><span class="p">:</span>
+            <span class="c"># This is to prevent a spurious &#39;unexpected unindent&#39; warning from</span>
+            <span class="c"># docutils when the original docstring was blank.</span>
+            <span class="n">new_doc</span> <span class="o">+=</span> <span class="s">r&#39;\ &#39;</span>
+        <span class="k">return</span> <span class="n">new_doc</span>
+
+    <span class="k">def</span> <span class="nf">get_function</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given a function or classmethod (or other function wrapper type), get</span>
+<span class="sd">        the function object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">method_types</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">__func__</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c"># classmethods in Python2.6 and below lack the __func__</span>
+                <span class="c"># attribute so we need to hack around to get it</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="nb">object</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+                    <span class="c"># For staticmethods anyways the wrapped object is just a</span>
+                    <span class="c"># plain function (not a bound method or anything like that)</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">method</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="s">&#39;__func__&#39;</span><span class="p">):</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">__func__</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="s">&#39;im_func&#39;</span><span class="p">):</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">im_func</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># Nothing we can do really...  just return the original</span>
+                    <span class="c"># classmethod, etc.</span>
+                    <span class="k">return</span> <span class="n">func</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">def</span> <span class="nf">deprecate_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a wrapped function that displays an</span>
+<span class="sd">        ``AstropyDeprecationWarning`` when it is called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">method_types</span><span class="p">):</span>
+            <span class="n">func_wrapper</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">func_wrapper</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">f</span>
+
+        <span class="n">func</span> <span class="o">=</span> <span class="n">get_function</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">deprecated_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pending</span><span class="p">:</span>
+                <span class="n">category</span> <span class="o">=</span> <span class="n">AstropyPendingDeprecationWarning</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">category</span> <span class="o">=</span> <span class="n">AstropyDeprecationWarning</span>
+
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c"># If this is an extension function, we can&#39;t call</span>
+        <span class="c"># functools.wraps on it, but we normally don&#39;t care.</span>
+        <span class="c"># This crazy way to get the type of a wrapper descriptor is</span>
+        <span class="c"># straight out of the Python 3.3 inspect module docs.</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;__add__&#39;</span><span class="p">]):</span>
+            <span class="n">deprecated_func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)(</span><span class="n">deprecated_func</span><span class="p">)</span>
+
+        <span class="n">deprecated_func</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">deprecate_doc</span><span class="p">(</span>
+            <span class="n">deprecated_func</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">func_wrapper</span><span class="p">(</span><span class="n">deprecated_func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deprecate_class</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a wrapper class with the docstrings updated and an</span>
+<span class="sd">        __init__ function that will raise an</span>
+<span class="sd">        ``AstropyDeprectationWarning`` warning when called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Creates a new class with the same name and bases as the</span>
+        <span class="c"># original class, but updates the dictionary with a new</span>
+        <span class="c"># docstring and a wrapped __init__ method.  __module__ needs</span>
+        <span class="c"># to be manually copied over, since otherwise it will be set</span>
+        <span class="c"># to *this* module (astropy.utils.misc).</span>
+
+        <span class="c"># This approach seems to make Sphinx happy (the new class</span>
+        <span class="c"># looks enough like the original class), and works with</span>
+        <span class="c"># extension classes (which functools.wraps does not, since</span>
+        <span class="c"># it tries to modify the original class).</span>
+
+        <span class="c"># We need to add a custom pickler or you&#39;ll get</span>
+        <span class="c">#     Can&#39;t pickle &lt;class ..&gt;: it&#39;s not found as ...</span>
+        <span class="c"># errors. Picklability is required for any class that is</span>
+        <span class="c"># documented by Sphinx.</span>
+
+        <span class="n">members</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s">&#39;__doc__&#39;</span><span class="p">:</span> <span class="n">deprecate_doc</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="n">message</span><span class="p">),</span>
+            <span class="s">&#39;__init__&#39;</span><span class="p">:</span> <span class="n">deprecate_function</span><span class="p">(</span><span class="n">get_function</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__init__</span><span class="p">),</span>
+                                           <span class="n">message</span><span class="p">),</span>
+        <span class="p">})</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__bases__</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deprecate</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="n">alternative</span><span class="p">,</span>
+                  <span class="n">pending</span><span class="o">=</span><span class="n">pending</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+                <span class="n">obj_type_name</span> <span class="o">=</span> <span class="s">&#39;class&#39;</span>
+            <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+                <span class="n">obj_type_name</span> <span class="o">=</span> <span class="s">&#39;function&#39;</span>
+            <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">method_types</span><span class="p">):</span>
+                <span class="n">obj_type_name</span> <span class="o">=</span> <span class="s">&#39;method&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">obj_type_name</span> <span class="o">=</span> <span class="s">&#39;object&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">obj_type_name</span> <span class="o">=</span> <span class="n">obj_type</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">get_function</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span>
+
+        <span class="n">altmessage</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">deprecate</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pending</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;The </span><span class="si">%(func)s</span><span class="s"> </span><span class="si">%(obj_type)s</span><span class="s"> will be deprecated in a &#39;</span>
+                           <span class="s">&#39;future version.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;The </span><span class="si">%(func)s</span><span class="s"> </span><span class="si">%(obj_type)s</span><span class="s"> is deprecated and may &#39;</span>
+                           <span class="s">&#39;be removed in a future version.&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">alternative</span><span class="p">:</span>
+                <span class="n">altmessage</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">        Use </span><span class="si">%s</span><span class="s"> instead.&#39;</span> <span class="o">%</span> <span class="n">alternative</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="p">((</span><span class="n">message</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s">&#39;func&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;alternative&#39;</span><span class="p">:</span> <span class="n">alternative</span><span class="p">,</span>
+            <span class="s">&#39;obj_type&#39;</span><span class="p">:</span> <span class="n">obj_type_name</span><span class="p">})</span> <span class="o">+</span>
+            <span class="n">altmessage</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">deprecate_class</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">deprecate_function</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">deprecate</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">deprecate</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">deprecate</span>
+
+</div>
+<div class="viewcode-block" id="deprecated_attribute"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.deprecated_attribute.html#astropy.units.deprecated_attribute">[docs]</a><span class="k">def</span> <span class="nf">deprecated_attribute</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">since</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">pending</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to mark a public attribute as deprecated.  This creates a</span>
+<span class="sd">    property that will warn when the given attribute name is accessed.</span>
+<span class="sd">    To prevent the warning (i.e. for internal code), use the private</span>
+<span class="sd">    name for the attribute by prepending an underscore</span>
+<span class="sd">    (i.e. ``self._name``).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the deprecated attribute.</span>
+
+<span class="sd">    since : str</span>
+<span class="sd">        The release at which this API became deprecated.  This is</span>
+<span class="sd">        required.</span>
+
+<span class="sd">    message : str, optional</span>
+<span class="sd">        Override the default deprecation message.  The format</span>
+<span class="sd">        specifier ``name`` may be used for the name of the attribute,</span>
+<span class="sd">        and ``alternative`` may be used in the deprecation message</span>
+<span class="sd">        to insert the name of an alternative to the deprecated</span>
+<span class="sd">        function.</span>
+
+<span class="sd">    alternative : str, optional</span>
+<span class="sd">        An alternative attribute that the user may use in place of the</span>
+<span class="sd">        deprecated attribute.  The deprecation warning will tell the</span>
+<span class="sd">        user about this alternative if provided.</span>
+
+<span class="sd">    pending : bool, optional</span>
+<span class="sd">        If True, uses a AstropyPendingDeprecationWarning instead of a</span>
+<span class="sd">        AstropyDeprecationWarning.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        class MyClass:</span>
+<span class="sd">            # Mark the old_name as deprecated</span>
+<span class="sd">            old_name = misc.deprecated_attribute(&#39;old_name&#39;, &#39;0.1&#39;)</span>
+
+<span class="sd">            def method(self):</span>
+<span class="sd">                self._old_name = 42</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">private_name</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">name</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="n">since</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_type</span><span class="o">=</span><span class="s">&#39;attribute&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">private_name</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="n">since</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_type</span><span class="o">=</span><span class="s">&#39;attribute&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">private_name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="n">since</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_type</span><span class="o">=</span><span class="s">&#39;attribute&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">private_name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">get</span><span class="p">,</span> <span class="nb">set</span><span class="p">,</span> <span class="n">delete</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="lazyproperty"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.lazyproperty.html#astropy.units.lazyproperty">[docs]</a><span class="k">class</span> <span class="nc">lazyproperty</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Works similarly to property(), but computes the value only once.</span>
+
+<span class="sd">    This essentially memorizes the value of the property by storing the result</span>
+<span class="sd">    of its computation in the ``__dict__`` of the object instance.  This is</span>
+<span class="sd">    useful for computing the value of some property that should otherwise be</span>
+<span class="sd">    invariant.  For example::</span>
+
+<span class="sd">        &gt;&gt;&gt; class LazyTest(object):</span>
+<span class="sd">        ...     @lazyproperty</span>
+<span class="sd">        ...     def complicated_property(self):</span>
+<span class="sd">        ...         print(&#39;Computing the value for complicated_property...&#39;)</span>
+<span class="sd">        ...         return 42</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; lt = LazyTest()</span>
+<span class="sd">        &gt;&gt;&gt; lt.complicated_property</span>
+<span class="sd">        Computing the value for complicated_property...</span>
+<span class="sd">        42</span>
+<span class="sd">        &gt;&gt;&gt; lt.complicated_property</span>
+<span class="sd">        42</span>
+
+<span class="sd">    As the example shows, the second time ``complicated_property`` is accessed,</span>
+<span class="sd">    the ``print`` statement is not executed.  Only the return value from the</span>
+<span class="sd">    first access off ``complicated_property`` is returned.</span>
+
+<span class="sd">    If a setter for this property is defined, it will still be possible to</span>
+<span class="sd">    manually update the value of the property, if that capability is desired.</span>
+
+<span class="sd">    Adapted from the recipe at</span>
+<span class="sd">    http://code.activestate.com/recipes/363602-lazy-property-evaluation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fget</span><span class="p">,</span> <span class="n">fset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fget</span> <span class="o">=</span> <span class="n">fget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fset</span> <span class="o">=</span> <span class="n">fset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdel</span> <span class="o">=</span> <span class="n">fdel</span>
+        <span class="k">if</span> <span class="n">doc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">fget</span><span class="o">.</span><span class="n">__doc__</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fget</span><span class="o">.</span><span class="n">__name__</span>
+
+    <span class="k">def</span> <span class="nf">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fget</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="k">return</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="n">obj_dict</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fset</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fset</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">obj_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">)</span> <span class="ow">is</span> <span class="n">ret</span><span class="p">:</span>
+                <span class="c"># By returning the value set the setter signals that it took</span>
+                <span class="c"># over setting the value in obj.__dict__; this mechanism allows</span>
+                <span class="c"># it to override the input value</span>
+                <span class="k">return</span>
+        <span class="n">obj_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fdel</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fdel</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="lazyproperty.getter"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.lazyproperty.html#astropy.units.lazyproperty.getter">[docs]</a>    <span class="k">def</span> <span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fget</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ter</span><span class="p">(</span><span class="n">fget</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="lazyproperty.setter"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.lazyproperty.html#astropy.units.lazyproperty.setter">[docs]</a>    <span class="k">def</span> <span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ter</span><span class="p">(</span><span class="n">fset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="lazyproperty.deleter"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.lazyproperty.html#astropy.units.lazyproperty.deleter">[docs]</a>    <span class="k">def</span> <span class="nf">deleter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fdel</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ter</span><span class="p">(</span><span class="n">fdel</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__ter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_fget</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fdel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">]</span>
+        <span class="n">args</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">cls_ns</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">f_locals</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">cls_ns</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">property_name</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="k">break</span>
+
+        <span class="n">cls_ns</span><span class="p">[</span><span class="n">property_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">lazyproperty</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cls_ns</span><span class="p">[</span><span class="n">property_name</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="sharedmethod"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.sharedmethod.html#astropy.units.sharedmethod">[docs]</a><span class="k">class</span> <span class="nc">sharedmethod</span><span class="p">(</span><span class="nb">classmethod</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a method decorator that allows both an instancemethod and a</span>
+<span class="sd">    `classmethod` to share the same name.</span>
+
+<span class="sd">    When using `sharedmethod` on a method defined in a class&#39;s body, it</span>
+<span class="sd">    may be called on an instance, or on a class.  In the former case it</span>
+<span class="sd">    behaves like a normal instance method (a reference to the instance is</span>
+<span class="sd">    automatically passed as the first ``self`` argument of the method)::</span>
+
+<span class="sd">        &gt;&gt;&gt; class Example(object):</span>
+<span class="sd">        ...     @sharedmethod</span>
+<span class="sd">        ...     def identify(self, *args):</span>
+<span class="sd">        ...         print(&#39;self was&#39;, self)</span>
+<span class="sd">        ...         print(&#39;additional args were&#39;, args)</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; ex = Example()</span>
+<span class="sd">        &gt;&gt;&gt; ex.identify(1, 2)</span>
+<span class="sd">        self was &lt;astropy.utils.decorators.Example object at 0x...&gt;</span>
+<span class="sd">        additional args were (1, 2)</span>
+
+<span class="sd">    In the latter case, when the `sharedmethod` is called directly from a</span>
+<span class="sd">    class, it behaves like a `classmethod`::</span>
+
+<span class="sd">        &gt;&gt;&gt; Example.identify(3, 4)</span>
+<span class="sd">        self was &lt;class &#39;astropy.utils.decorators.Example&#39;&gt;</span>
+<span class="sd">        additional args were (3, 4)</span>
+
+<span class="sd">    This also supports a more advanced usage, where the `classmethod`</span>
+<span class="sd">    implementation can be written separately.  If the class&#39;s *metaclass*</span>
+<span class="sd">    has a method of the same name as the `sharedmethod`, the version on</span>
+<span class="sd">    the metaclass is delegated to::</span>
+
+<span class="sd">        &gt;&gt;&gt; from astropy.extern.six import add_metaclass</span>
+<span class="sd">        &gt;&gt;&gt; class ExampleMeta(type):</span>
+<span class="sd">        ...     def identify(self):</span>
+<span class="sd">        ...         print(&#39;this implements the {0}.identify &#39;</span>
+<span class="sd">        ...               &#39;classmethod&#39;.format(self.__name__))</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; @add_metaclass(ExampleMeta)</span>
+<span class="sd">        ... class Example(object):</span>
+<span class="sd">        ...     @sharedmethod</span>
+<span class="sd">        ...     def identify(self):</span>
+<span class="sd">        ...         print(&#39;this implements the instancemethod&#39;)</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; Example().identify()</span>
+<span class="sd">        this implements the instancemethod</span>
+<span class="sd">        &gt;&gt;&gt; Example.identify()</span>
+<span class="sd">        this implements the Example.identify classmethod</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+        <span class="c"># Workaround for Python 2.6 which does not have classmethod.__func__</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">__func__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">meth</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__obj__</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">__objtype__</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c"># self.__obj__ not set when called from __get__, but then it</span>
+                <span class="c"># doesn&#39;t matter anyways</span>
+                <span class="n">meth</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="nb">object</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">meth</span><span class="o">.</span><span class="n">__func__</span>
+
+        <span class="k">def</span> <span class="nf">__getobjwrapper</span><span class="p">(</span><span class="n">orig_get</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Used to temporarily set/unset self.__obj__ and self.__objtype__</span>
+<span class="sd">            for use by __func__.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">def</span> <span class="nf">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">objtype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__obj__</span> <span class="o">=</span> <span class="n">obj</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__objtype__</span> <span class="o">=</span> <span class="n">objtype</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">orig_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">objtype</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__obj__</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__objtype__</span>
+
+            <span class="k">return</span> <span class="n">__get__</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">__getobjwrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span>
+
+    <span class="nd">@__getobjwrapper</span>
+    <span class="k">def</span> <span class="nf">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">objtype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">mcls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">objtype</span><span class="p">)</span>
+            <span class="n">clsmeth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mcls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__func__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">clsmeth</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clsmeth</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">):</span>
+                    <span class="c"># This case will generally only apply on Python 2, which</span>
+                    <span class="c"># uses MethodType for unbound methods; Python 3 has no</span>
+                    <span class="c"># particular concept of unbound methods and will just</span>
+                    <span class="c"># return a function</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">clsmeth</span><span class="o">.</span><span class="n">__func__</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">clsmeth</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__func__</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_method</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">objtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_method</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__func__</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+
+    <span class="k">del</span> <span class="n">__getobjwrapper</span>
+
+    <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
+        <span class="c"># The &#39;instancemethod&#39; type of Python 2 and the method type of</span>
+        <span class="c"># Python 3 have slightly different constructors</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">_make_method</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">instance</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">_make_method</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="wraps"><a class="viewcode-back" href="../../../api/astropy.utils.decorators.wraps.html#astropy.units.wraps">[docs]</a><span class="k">def</span> <span class="nf">wraps</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">functools</span><span class="o">.</span><span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span>
+          <span class="n">updated</span><span class="o">=</span><span class="n">functools</span><span class="o">.</span><span class="n">WRAPPER_UPDATES</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An alternative to `functools.wraps` which also preserves the original</span>
+<span class="sd">    function&#39;s call signature by way of</span>
+<span class="sd">    `~astropy.utils.codegen.make_function_with_signature`.</span>
+
+<span class="sd">    The documentation for the original `functools.wraps` follows:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">make_function_with_signature</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">wrapped</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                            <span class="o">**</span><span class="n">_get_function_args</span><span class="p">(</span><span class="n">wrapped</span><span class="p">))</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">update_wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">assigned</span><span class="p">,</span>
+                                        <span class="n">updated</span><span class="o">=</span><span class="n">updated</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+</div>
+<span class="n">wraps</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">+=</span> <span class="n">functools</span><span class="o">.</span><span class="n">wraps</span><span class="o">.</span><span class="n">__doc__</span>
+
+
+<span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_get_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Utility function for `wraps`.</span>
+
+<span class="sd">        Reads the argspec for the given function and converts it to arguments</span>
+<span class="sd">        for `make_function_with_signature`.  This requires different</span>
+<span class="sd">        implementations on Python 2 versus Python 3.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">argspec</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">argspec</span><span class="o">.</span><span class="n">defaults</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">argspec</span><span class="o">.</span><span class="n">args</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">argspec</span><span class="o">.</span><span class="n">defaults</span><span class="p">)]</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">argspec</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">):],</span> <span class="n">argspec</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">argspec</span><span class="o">.</span><span class="n">args</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">argspec</span><span class="o">.</span><span class="n">kwonlyargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">argname</span><span class="p">,</span> <span class="n">argspec</span><span class="o">.</span><span class="n">kwonlydefaults</span><span class="p">[</span><span class="n">argname</span><span class="p">])</span>
+                          <span class="k">for</span> <span class="n">argname</span> <span class="ow">in</span> <span class="n">argspec</span><span class="o">.</span><span class="n">kwonlyargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;args&#39;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span> <span class="s">&#39;kwargs&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span> <span class="s">&#39;varargs&#39;</span><span class="p">:</span> <span class="n">argspec</span><span class="o">.</span><span class="n">varargs</span><span class="p">,</span>
+                <span class="s">&#39;varkwargs&#39;</span><span class="p">:</span> <span class="n">argspec</span><span class="o">.</span><span class="n">varkw</span><span class="p">}</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_get_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Utility function for `wraps`.</span>
+
+<span class="sd">        Reads the argspec for the given function and converts it to arguments</span>
+<span class="sd">        for `make_function_with_signature`.  This requires different</span>
+<span class="sd">        implementations on Python 2 versus Python 3.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">argspec</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">argspec</span><span class="o">.</span><span class="n">defaults</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">argspec</span><span class="o">.</span><span class="n">args</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">argspec</span><span class="o">.</span><span class="n">defaults</span><span class="p">)]</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">argspec</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">):],</span> <span class="n">argspec</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">argspec</span><span class="o">.</span><span class="n">args</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;args&#39;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span> <span class="s">&#39;kwargs&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span> <span class="s">&#39;varargs&#39;</span><span class="p">:</span> <span class="n">argspec</span><span class="o">.</span><span class="n">varargs</span><span class="p">,</span>
+                <span class="s">&#39;varkwargs&#39;</span><span class="p">:</span> <span class="n">argspec</span><span class="o">.</span><span class="n">keywords</span><span class="p">}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

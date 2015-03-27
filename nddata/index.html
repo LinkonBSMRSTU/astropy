@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>N-dimensional datasets (astropy.nddata) &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="next" title="NDData" href="nddata.html" />
+    <link rel="prev" title="temperature_energy" href="../api/astropy.units.equivalencies.temperature_energy.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="nddata.html" title="NDData">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="../api/astropy.units.equivalencies.temperature_energy.html" title="temperature_energy">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      
+      <li>N-dimensional datasets (<tt class="docutils literal"><span class="pre">astropy.nddata</span></tt>)</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="n-dimensional-datasets-astropy-nddata">
+<span id="astropy-nddata"></span><h1>N-dimensional datasets (<a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">astropy.nddata</span></tt></a>)<a class="headerlink" href="#n-dimensional-datasets-astropy-nddata" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">nddata</span></tt></a> package provides a uniform interface to N-dimensional
+datasets in astropy through:</p>
+<ul class="simple">
+<li>The <a class="reference internal" href="../api/astropy.nddata.NDDataBase.html#astropy.nddata.NDDataBase" title="astropy.nddata.NDDataBase"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataBase</span></tt></a> metaclass to define an astropy-wide
+interface to N-dimensional data sets while allowing flexibility in
+how those datasets are represented internally.</li>
+<li>The <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> class, which provides a basic container for
+gridded N-dimensional datasets.</li>
+<li>Several mixin classes for adding functionality to <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a>
+containers.</li>
+<li>A decorator, <a class="reference internal" href="../api/astropy.nddata.support_nddata.html#astropy.nddata.support_nddata" title="astropy.nddata.support_nddata"><tt class="xref py py-obj docutils literal"><span class="pre">support_nddata</span></tt></a>, for facilitating use of
+<a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">nddata</span></tt></a> objects  in functions in astropy and affiliated packages.</li>
+</ul>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last"><a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">nddata</span></tt></a> has changed significantly in astropy 1.0. See the section
+<a class="reference internal" href="#nddata-transition"><em>Transition to astropy 1.0</em></a> for more information.</p>
+</div>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>Of the classes provided by <a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">nddata</span></tt></a>, the place to start for most
+users will be <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a>, which by default uses a numpy array to
+store the data. Designers of new classes should also look at
+<a class="reference internal" href="../api/astropy.nddata.NDDataBase.html#astropy.nddata.NDDataBase" title="astropy.nddata.NDDataBase"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataBase</span></tt></a> before deciding what to subclass from.</p>
+<div class="section" id="nddata">
+<h3>NDData<a class="headerlink" href="#nddata" title="Permalink to this headline">¶</a></h3>
+<p>The primary purpose of <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> is to act as a <em>container</em> for
+data, metadata, and other related information like a mask.</p>
+<p>An <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> object can be instantiated by passing it an
+n-dimensional Numpy array:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.nddata</span> <span class="kn">import</span> <span class="n">NDData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>  <span class="c"># a 3-dimensional array with all zeros</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ndd</span> <span class="o">=</span> <span class="n">NDData</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or something that can be converted to an array:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd2</span> <span class="o">=</span> <span class="n">NDData</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>It is also possible to initialize <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> with more exotic
+objects; see <a class="reference internal" href="nddata.html#nddata-details"><em>NDData</em></a> for more information.</p>
+<p>The underlying Numpy array can be accessed via the <tt class="docutils literal"><span class="pre">data</span></tt> attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd</span><span class="o">.</span><span class="n">data</span>
+<span class="go">array([[[ 0., 0., 0., ...</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<p>Values can be masked using the <tt class="docutils literal"><span class="pre">mask</span></tt> attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd_masked</span> <span class="o">=</span> <span class="n">NDData</span><span class="p">(</span><span class="n">ndd</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">ndd</span><span class="o">.</span><span class="n">data</span> <span class="o">&gt;</span> <span class="mf">0.9</span><span class="p">)</span>
+<span class="go">INFO: Overwriting NDData&#39;s current mask with specified mask [astropy.nddata.nddata]</span>
+</pre></div>
+</div>
+<p>A mask value of <a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">True</span></tt></a> indicates a value that should be ignored, while a mask
+value of <a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">False</span></tt></a> indicates a valid value.</p>
+<p>Similar attributes are available to store:</p>
+<ul class="simple">
+<li>generic meta-data, in <tt class="docutils literal"><span class="pre">meta</span></tt>,</li>
+<li>a unit for the data values, in <tt class="docutils literal"><span class="pre">unit</span></tt> and</li>
+<li>an uncertainty for the data values, in <tt class="docutils literal"><span class="pre">uncertainty</span></tt>. Note that the
+<tt class="docutils literal"><span class="pre">uncertainty</span></tt> must have a string attribute called <tt class="docutils literal"><span class="pre">uncertainty_type</span></tt>.</li>
+</ul>
+<p>Note that a <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> object is not sliceable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd2</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>        
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">TypeError</span>: <span class="n">&#39;NDData&#39; object has no attribute &#39;__getitem__&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mixins-for-additional-functionality">
+<h3>Mixins for additional functionality<a class="headerlink" href="#mixins-for-additional-functionality" title="Permalink to this headline">¶</a></h3>
+<p>Several classes are provided to add functionality to the basic <tt class="docutils literal"><span class="pre">NDData</span></tt>
+container. They include:</p>
+<ul class="simple">
+<li><a class="reference internal" href="../api/astropy.nddata.NDSlicingMixin.html#astropy.nddata.NDSlicingMixin" title="astropy.nddata.NDSlicingMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDSlicingMixin</span></tt></a> to handle slicing of N-dimensional data.</li>
+<li><a class="reference internal" href="../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin" title="astropy.nddata.NDArithmeticMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDArithmeticMixin</span></tt></a> to allow arithmetic operations on
+<a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> objects that include support propagation of
+uncertainties (in limited cases).</li>
+<li><a class="reference internal" href="../api/astropy.nddata.NDIOMixin.html#astropy.nddata.NDIOMixin" title="astropy.nddata.NDIOMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDIOMixin</span></tt></a> to use existing astropy functionality for input
+(with the method <tt class="docutils literal"><span class="pre">read</span></tt>) and output (with the method <tt class="docutils literal"><span class="pre">write</span></tt>).</li>
+</ul>
+<p>To use these mixins, create a new class that includes the appropriate mixins
+as subclasses. For example, to make a class that includes slicing, but not
+arithmetic or I/O:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.nddata</span> <span class="kn">import</span> <span class="n">NDData</span><span class="p">,</span> <span class="n">NDSlicingMixin</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">NDDataSliceable</span><span class="p">(</span><span class="n">NDSlicingMixin</span><span class="p">,</span> <span class="n">NDData</span><span class="p">):</span> <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Note that the body of the class need not contain any code; all of the
+functionality is provided by the <tt class="docutils literal"><span class="pre">NDData</span></tt> container and the mixins. The
+order of the classes is important because python works from right to left in
+determining the order in which methods are resolved.</p>
+<p><tt class="docutils literal"><span class="pre">NDDataSliceable</span></tt> is initialized the same way that <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd_sliceable</span> <span class="o">=</span> <span class="n">NDDataSliceable</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>but can be sliced:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd_sliceable</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">NDDataSliceable([2, 3])</span>
+</pre></div>
+</div>
+<p>The class <a class="reference internal" href="../api/astropy.nddata.NDDataArray.html#astropy.nddata.NDDataArray" title="astropy.nddata.NDDataArray"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataArray</span></tt></a> is an example of a class which
+utilizes mixins <em>and</em> adds functionality.</p>
+</div>
+<div class="section" id="nddatabase-for-making-new-subclasses">
+<h3>NDDataBase for making new subclasses<a class="headerlink" href="#nddatabase-for-making-new-subclasses" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="../api/astropy.nddata.NDDataBase.html#astropy.nddata.NDDataBase" title="astropy.nddata.NDDataBase"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataBase</span></tt></a> is a metaclass provided to support the creation
+of objects that support the NDData interface but need the freedom to define
+their own ways of storing data, unit, metadata and/or other properties. It
+should be used instead of <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> as the starting point for
+any class for which the <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> class is too restrictive.</p>
+</div>
+</div>
+<div class="section" id="transition-to-astropy-1-0">
+<span id="nddata-transition"></span><h2>Transition to astropy 1.0<a class="headerlink" href="#transition-to-astropy-1-0" title="Permalink to this headline">¶</a></h2>
+<p>The nddata package underwent substantial revision as a result of <a class="reference external" href="https://github.com/astropy/astropy-APEs/blob/master/APE7.rst">APE 7</a>;
+please see that APE for an extensive discussion of the motivation and the
+changes.</p>
+<p>The most important changes are that:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">NDData</span></tt> does not provide a numpy-like interface; to use its data use the
+<tt class="docutils literal"><span class="pre">data</span></tt> attribute instead.</li>
+<li>Slicing is no provided in the base <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a>.</li>
+<li>Arithmetic is no longer included in the base <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> class.</li>
+</ul>
+<p>Code that only uses the metadata features of <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> should
+not need to be modified.</p>
+<p>Code that uses the arithemtic methods that used to be included in
+<a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> and relied on it to behave like a numpy array should
+instead subclass <a class="reference internal" href="../api/astropy.nddata.NDDataArray.html#astropy.nddata.NDDataArray" title="astropy.nddata.NDDataArray"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataArray</span></tt></a>; that class is equivalent to
+the original <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> class.</p>
+</div>
+<div class="section" id="using-nddata">
+<h2>Using <tt class="docutils literal"><span class="pre">nddata</span></tt><a class="headerlink" href="#using-nddata" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="nddata.html">NDData</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#initializing">Initializing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#mask">Mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#unit">Unit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#uncertainties">Uncertainties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#meta-data">Meta-data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#wcs">WCS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nddata.html#converting-to-numpy-arrays">Converting to Numpy arrays</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="decorator.html">Decorating functions to accept NDData objects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decorator.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decorator.html#getting-started">Getting started</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mixins/index.html">Mixins for added functionality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mixins/ndslicing.html">Slicing mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mixins/ndarithmetic.html">Arithmetic mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mixins/ndio.html">I/O mixin</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="subclassing.html">Subclassing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="subclassing.html#nddatabase"><tt class="docutils literal"><span class="pre">NDDataBase</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="subclassing.html#nddata"><tt class="docutils literal"><span class="pre">NDData</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="subclassing.html#subclassing-nduncertainty">Subclassing <tt class="docutils literal"><span class="pre">NDUncertainty</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="reference-api">
+<h2>Reference/API<a class="headerlink" href="#reference-api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-astropy.nddata">
+<span id="astropy-nddata-module"></span><h3>astropy.nddata Module<a class="headerlink" href="#module-astropy.nddata" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">astropy.nddata</span></tt></a> subpackage provides the <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a>
+class and related tools to manage n-dimensional array-based data (e.g.
+CCD images, IFU Data, grid-based simulation data, ...). This is more than
+just <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.9)"><tt class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></tt></a> objects, because it provides metadata that cannot
+be easily provided by a single array.</p>
+<div class="section" id="functions">
+<h4>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.support_nddata.html#astropy.nddata.support_nddata" title="astropy.nddata.support_nddata"><tt class="xref py py-obj docutils literal"><span class="pre">support_nddata</span></tt></a>([_func,&nbsp;accepts,&nbsp;repack,&nbsp;returns])</td>
+<td>Decorator to split NDData properties into function arguments.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="classes">
+<h4>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.Conf.html#astropy.nddata.Conf" title="astropy.nddata.Conf"><tt class="xref py py-obj docutils literal"><span class="pre">Conf</span></tt></a></td>
+<td>Configuration parameters for <a class="reference internal" href="#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">astropy.nddata</span></tt></a>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.FlagCollection.html#astropy.nddata.FlagCollection" title="astropy.nddata.FlagCollection"><tt class="xref py py-obj docutils literal"><span class="pre">FlagCollection</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>The purpose of this class is to provide a dictionary for containing arrays of flags for the <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> class.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.IncompatibleUncertaintiesException.html#astropy.nddata.IncompatibleUncertaintiesException" title="astropy.nddata.IncompatibleUncertaintiesException"><tt class="xref py py-obj docutils literal"><span class="pre">IncompatibleUncertaintiesException</span></tt></a></td>
+<td>This exception should be used to indicate cases in which uncertainties with two different classes can not be propagated.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.MissingDataAssociationException.html#astropy.nddata.MissingDataAssociationException" title="astropy.nddata.MissingDataAssociationException"><tt class="xref py py-obj docutils literal"><span class="pre">MissingDataAssociationException</span></tt></a></td>
+<td>This exception should be used to indicate that an uncertainty instance has not been associated with a parent <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin" title="astropy.nddata.NDArithmeticMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDArithmeticMixin</span></tt></a></td>
+<td>Mixin class to add arithmetic to an NDData object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a>(data[,&nbsp;uncertainty,&nbsp;mask,&nbsp;wcs,&nbsp;meta,&nbsp;...])</td>
+<td>A basic class for array-based data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.NDDataArray.html#astropy.nddata.NDDataArray" title="astropy.nddata.NDDataArray"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataArray</span></tt></a>(*arg,&nbsp;**kwd)</td>
+<td>An <tt class="docutils literal"><span class="pre">NDData</span></tt> object with arithmetic.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.NDDataBase.html#astropy.nddata.NDDataBase" title="astropy.nddata.NDDataBase"><tt class="xref py py-obj docutils literal"><span class="pre">NDDataBase</span></tt></a>()</td>
+<td>Base metaclass that defines the interface for NDData  Classes that wish to use this interface without inheriting from <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> should subclass <tt class="docutils literal"><span class="pre">NDDataBase</span></tt> instead.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.NDIOMixin.html#astropy.nddata.NDIOMixin" title="astropy.nddata.NDIOMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDIOMixin</span></tt></a></td>
+<td>Mixin class to connect NDData to the astropy input/output registry.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.NDSlicingMixin.html#astropy.nddata.NDSlicingMixin" title="astropy.nddata.NDSlicingMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDSlicingMixin</span></tt></a></td>
+<td>Mixin to provide slicing on objects using the NDData interface.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.NDUncertainty.html#astropy.nddata.NDUncertainty" title="astropy.nddata.NDUncertainty"><tt class="xref py py-obj docutils literal"><span class="pre">NDUncertainty</span></tt></a></td>
+<td>This is the base class for uncertainty classes used with NDData.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.StdDevUncertainty.html#astropy.nddata.StdDevUncertainty" title="astropy.nddata.StdDevUncertainty"><tt class="xref py py-obj docutils literal"><span class="pre">StdDevUncertainty</span></tt></a>([array,&nbsp;copy])</td>
+<td>A class for standard deviation uncertainties</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-astropy.nddata.utils">
+<span id="astropy-nddata-utils-module"></span><h3>astropy.nddata.utils Module<a class="headerlink" href="#module-astropy.nddata.utils" title="Permalink to this headline">¶</a></h3>
+<p>This module includes helper functions for array operations.</p>
+<div class="section" id="id1">
+<h4>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.utils.extract_array.html#astropy.nddata.utils.extract_array" title="astropy.nddata.utils.extract_array"><tt class="xref py py-obj docutils literal"><span class="pre">extract_array</span></tt></a>(array_large,&nbsp;shape,&nbsp;position)</td>
+<td>Extract smaller array of given shape and position out of a larger array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.utils.add_array.html#astropy.nddata.utils.add_array" title="astropy.nddata.utils.add_array"><tt class="xref py py-obj docutils literal"><span class="pre">add_array</span></tt></a>(array_large,&nbsp;array_small,&nbsp;position)</td>
+<td>Add a smaller array at a given position in a larger array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.nddata.utils.subpixel_indices.html#astropy.nddata.utils.subpixel_indices" title="astropy.nddata.utils.subpixel_indices"><tt class="xref py py-obj docutils literal"><span class="pre">subpixel_indices</span></tt></a>(position,&nbsp;subsampling)</td>
+<td>Convert decimal points to indices, given a subsampling factor.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.nddata.utils.overlap_slices.html#astropy.nddata.utils.overlap_slices" title="astropy.nddata.utils.overlap_slices"><tt class="xref py py-obj docutils literal"><span class="pre">overlap_slices</span></tt></a>(large_array_shape,&nbsp;...)</td>
+<td>Get slices for the overlapping part of a small and a large array.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">N-dimensional datasets (<tt class="docutils literal"><span class="pre">astropy.nddata</span></tt>)</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#getting-started">Getting started</a><ul>
+<li><a class="reference internal" href="#nddata">NDData</a></li>
+<li><a class="reference internal" href="#mixins-for-additional-functionality">Mixins for additional functionality</a></li>
+<li><a class="reference internal" href="#nddatabase-for-making-new-subclasses">NDDataBase for making new subclasses</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transition-to-astropy-1-0">Transition to astropy 1.0</a></li>
+<li><a class="reference internal" href="#using-nddata">Using <tt class="docutils literal"><span class="pre">nddata</span></tt></a></li>
+<li><a class="reference internal" href="#reference-api">Reference/API</a><ul>
+<li><a class="reference internal" href="#module-astropy.nddata">astropy.nddata Module</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-astropy.nddata.utils">astropy.nddata.utils Module</a><ul>
+<li><a class="reference internal" href="#id1">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/nddata/index.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/nddata/index.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

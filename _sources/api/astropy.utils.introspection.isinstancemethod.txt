@@ -1,0 +1,8 @@
+
+
+isinstancemethod
+============================================
+
+.. currentmodule:: astropy.utils.introspection
+
+.. autofunction:: isinstancemethod

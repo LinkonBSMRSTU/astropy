@@ -1,0 +1,49 @@
+<map id="inheritancef50307d8ea" name="inheritancef50307d8ea">
+<area shape="rect" id="node1" href="../../api/astropy.io.ascii.AASTex.html#astropy.io.ascii.AASTex" title="Write and read AASTeX tables." alt="" coords="465,664,534,688"/>
+<area shape="rect" id="node2" href="../../api/astropy.io.ascii.Latex.html#astropy.io.ascii.Latex" title="Write and read LaTeX tables." alt="" coords="260,722,328,746"/>
+<area shape="rect" id="node3" href="../../api/astropy.io.ascii.AllType.html#astropy.io.ascii.AllType" title="Subclass of all other data types." alt="" coords="655,570,724,594"/>
+<area shape="rect" id="node4" href="../../api/astropy.io.ascii.StrType.html#astropy.io.ascii.StrType" title="Indicates that a column consists of text data." alt="" coords="260,522,328,546"/>
+<area shape="rect" id="node5" href="../../api/astropy.io.ascii.FloatType.html#astropy.io.ascii.FloatType" title="Describes floating&#45;point data." alt="" coords="461,570,538,594"/>
+<area shape="rect" id="node6" href="../../api/astropy.io.ascii.IntType.html#astropy.io.ascii.IntType" title="Describes integer data." alt="" coords="465,617,534,641"/>
+<area shape="rect" id="node7" href="../../api/astropy.io.ascii.BaseData.html#astropy.io.ascii.BaseData" title="Base table data reader." alt="" coords="42,474,123,498"/>
+<area shape="rect" id="node14" href="../../api/astropy.io.ascii.BasicData.html#astropy.io.ascii.BasicData" title="Basic table Data Reader" alt="" coords="253,474,335,498"/>
+<area shape="rect" id="node8" href="../../api/astropy.io.ascii.BaseHeader.html#astropy.io.ascii.BaseHeader" title="Base table header reader" alt="" coords="34,427,131,451"/>
+<area shape="rect" id="node15" href="../../api/astropy.io.ascii.BasicHeader.html#astropy.io.ascii.BasicHeader" title="Basic table Header Reader" alt="" coords="245,427,343,451"/>
+<area shape="rect" id="node9" href="../../api/astropy.io.ascii.BaseInputter.html#astropy.io.ascii.BaseInputter" title="Get the lines from the table input and return a list of lines." alt="" coords="33,380,132,404"/>
+<area shape="rect" id="node19" href="../../api/astropy.io.ascii.ContinuationLinesInputter.html#astropy.io.ascii.ContinuationLinesInputter" title="Inputter where lines ending in ``continuation_char`` are joined" alt="" coords="205,380,383,404"/>
+<area shape="rect" id="node10" href="../../api/astropy.io.ascii.BaseOutputter.html#astropy.io.ascii.BaseOutputter" title="Output table as a dict of column objects keyed on column name. &#160;The" alt="" coords="27,333,138,357"/>
+<area shape="rect" id="node46" href="../../api/astropy.io.ascii.TableOutputter.html#astropy.io.ascii.TableOutputter" title="Output the table as an astropy.table.Table object." alt="" coords="239,333,349,357"/>
+<area shape="rect" id="node11" href="../../api/astropy.io.ascii.BaseReader.html#astropy.io.ascii.BaseReader" title="Class providing methods to read and write an ASCII table using the specified" alt="" coords="35,899,129,923"/>
+<area shape="rect" id="node13" href="../../api/astropy.io.ascii.Basic.html#astropy.io.ascii.Basic" title="Read a character&#45;delimited table with a single header line at the top" alt="" coords="260,828,328,852"/>
+<area shape="rect" id="node16" href="../../api/astropy.io.ascii.Cds.html#astropy.io.ascii.Cds" title="Read a CDS format table. &#160;See http://vizier.u&#45;strasbg.fr/doc/catstd.htx." alt="" coords="260,874,328,899"/>
+<area shape="rect" id="node21" href="../../api/astropy.io.ascii.Daophot.html#astropy.io.ascii.Daophot" title="Read a DAOphot file." alt="" coords="257,921,331,945"/>
+<area shape="rect" id="node37" href="../../api/astropy.io.ascii.HTML.html#astropy.io.ascii.HTML" title="Read and write HTML tables." alt="" coords="260,968,328,992"/>
+<area shape="rect" id="node45" href="../../api/astropy.io.ascii.SExtractor.html#astropy.io.ascii.SExtractor" title="Read a SExtractor file." alt="" coords="252,1015,336,1039"/>
+<area shape="rect" id="node12" href="../../api/astropy.io.ascii.BaseSplitter.html#astropy.io.ascii.BaseSplitter" title="Base splitter that uses python&#39;s split method to do the work." alt="" coords="35,264,130,288"/>
+<area shape="rect" id="node22" href="../../api/astropy.io.ascii.DefaultSplitter.html#astropy.io.ascii.DefaultSplitter" title="Default class to split strings into columns using python csv. &#160;The class" alt="" coords="240,240,349,264"/>
+<area shape="rect" id="node34" href="../../api/astropy.io.ascii.FixedWidthSplitter.html#astropy.io.ascii.FixedWidthSplitter" title="Split line based on fixed start and end positions for each ``col`` in" alt="" coords="230,286,358,310"/>
+<area shape="rect" id="node18" href="../../api/astropy.io.ascii.CommentedHeader.html#astropy.io.ascii.CommentedHeader" title="Read a file where the column names are given in a line that begins with" alt="" coords="428,711,570,735"/>
+<area shape="rect" id="node20" href="../../api/astropy.io.ascii.Csv.html#astropy.io.ascii.Csv" title="Read a CSV (comma&#45;separated&#45;values) file." alt="" coords="465,758,534,782"/>
+<area shape="rect" id="node23" href="../../api/astropy.io.ascii.Ecsv.html#astropy.io.ascii.Ecsv" title="Read a file which conforms to the ECSV (Enhanced Character Separated" alt="" coords="465,805,534,829"/>
+<area shape="rect" id="node30" href="../../api/astropy.io.ascii.FixedWidth.html#astropy.io.ascii.FixedWidth" title="Read or write a fixed width table with a single header line that defines column" alt="" coords="457,852,542,876"/>
+<area shape="rect" id="node39" href="../../api/astropy.io.ascii.Ipac.html#astropy.io.ascii.Ipac" title="Read or write an IPAC format table. &#160;See" alt="" coords="465,899,534,923"/>
+<area shape="rect" id="node40" href="../../api/astropy.io.ascii.NoHeader.html#astropy.io.ascii.NoHeader" title="Read a table with no header line. &#160;Columns are autonamed using" alt="" coords="458,945,541,970"/>
+<area shape="rect" id="node44" href="../../api/astropy.io.ascii.Tab.html#astropy.io.ascii.Tab" title="Read a tab&#45;separated file. &#160;Unlike the :class:`Basic` reader, whitespace is" alt="" coords="465,992,534,1016"/>
+<area shape="rect" id="node31" href="../../api/astropy.io.ascii.FixedWidthData.html#astropy.io.ascii.FixedWidthData" title="Base table data reader." alt="" coords="442,474,556,498"/>
+<area shape="rect" id="node32" href="../../api/astropy.io.ascii.FixedWidthHeader.html#astropy.io.ascii.FixedWidthHeader" title="Fixed width table header reader." alt="" coords="435,427,564,451"/>
+<area shape="rect" id="node17" href="../../api/astropy.io.ascii.Column.html#astropy.io.ascii.Column" title="Table column." alt="" coords="48,170,117,194"/>
+<area shape="rect" id="node47" href="../../api/astropy.io.ascii.WhitespaceSplitter.html#astropy.io.ascii.WhitespaceSplitter" title="WhitespaceSplitter" alt="" coords="432,240,566,264"/>
+<area shape="rect" id="node24" href="../../api/astropy.io.ascii.FastBasic.html#astropy.io.ascii.FastBasic" title="This class is intended to handle the same format addressed by the" alt="" coords="43,99,122,123"/>
+<area shape="rect" id="node25" href="../../api/astropy.io.ascii.FastCommentedHeader.html#astropy.io.ascii.FastCommentedHeader" title="A faster version of the :class:`CommentedHeader` reader, which looks for" alt="" coords="211,5,377,29"/>
+<area shape="rect" id="node26" href="../../api/astropy.io.ascii.FastCsv.html#astropy.io.ascii.FastCsv" title="A faster version of the ordinary :class:`Csv` writer that uses the" alt="" coords="260,52,328,76"/>
+<area shape="rect" id="node27" href="../../api/astropy.io.ascii.FastNoHeader.html#astropy.io.ascii.FastNoHeader" title="This class uses the fast C engine to read tables with no header line. If" alt="" coords="240,99,348,123"/>
+<area shape="rect" id="node28" href="../../api/astropy.io.ascii.FastRdb.html#astropy.io.ascii.FastRdb" title="A faster version of the :class:`Rdb` reader. This format is similar to" alt="" coords="260,146,328,170"/>
+<area shape="rect" id="node29" href="../../api/astropy.io.ascii.FastTab.html#astropy.io.ascii.FastTab" title="A faster version of the ordinary :class:`Tab` reader that uses" alt="" coords="260,193,328,217"/>
+<area shape="rect" id="node33" href="../../api/astropy.io.ascii.FixedWidthNoHeader.html#astropy.io.ascii.FixedWidthNoHeader" title="Read or write a fixed width table which has no header line. &#160;Column" alt="" coords="616,829,763,853"/>
+<area shape="rect" id="node35" href="../../api/astropy.io.ascii.FixedWidthTwoLine.html#astropy.io.ascii.FixedWidthTwoLine" title="Read or write a fixed width table which has two header lines. &#160;The first" alt="" coords="624,876,755,900"/>
+<area shape="rect" id="node36" href="../../api/astropy.io.ascii.NumType.html#astropy.io.ascii.NumType" title="Indicates that a column consists of numerical data." alt="" coords="255,570,333,594"/>
+<area shape="rect" id="node38" href="../../api/astropy.io.ascii.InconsistentTableError.html#astropy.io.ascii.InconsistentTableError" title="Indicates that an input table is inconsistent in some way." alt="" coords="5,52,160,76"/>
+<area shape="rect" id="node41" href="../../api/astropy.io.ascii.NoType.html#astropy.io.ascii.NoType" title="Superclass for ``StrType`` and ``NumType`` classes." alt="" coords="48,546,117,570"/>
+<area shape="rect" id="node42" href="../../api/astropy.io.ascii.ParameterError.html#astropy.io.ascii.ParameterError" title="Indicates that a reader cannot handle a passed parameter." alt="" coords="25,5,139,29"/>
+<area shape="rect" id="node43" href="../../api/astropy.io.ascii.Rdb.html#astropy.io.ascii.Rdb" title="Read a tab&#45;separated file with an extra line after the column definition" alt="" coords="655,992,724,1016"/>
+</map>

@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.coordinates.builtin_frames.itrs &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.coordinates.builtin_frames.itrs</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span>
+                        <span class="n">print_function</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..representation</span> <span class="kn">import</span> <span class="n">CartesianRepresentation</span>
+<span class="kn">from</span> <span class="nn">..baseframe</span> <span class="kn">import</span> <span class="n">BaseCoordinateFrame</span><span class="p">,</span> <span class="n">TimeFrameAttribute</span><span class="p">,</span> <span class="n">frame_transform_graph</span>
+<span class="kn">from</span> <span class="nn">..transformations</span> <span class="kn">import</span> <span class="n">FunctionTransform</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_OBSTIME</span>
+
+
+<div class="viewcode-block" id="ITRS"><a class="viewcode-back" href="../../../../api/astropy.coordinates.ITRS.html#astropy.coordinates.ITRS">[docs]</a><span class="k">class</span> <span class="nc">ITRS</span><span class="p">(</span><span class="n">BaseCoordinateFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A coordinate or frame in the International Terrestrial Reference System</span>
+<span class="sd">    (ITRS).  This is approximately a geocentric system, although strictly it is</span>
+<span class="sd">    defined by a series of reference locations near the surface of the Earth.</span>
+<span class="sd">    For more background on the ITRS, see the references provided in the</span>
+<span class="sd">    :ref:`astropy-coordinates-seealso` section of the documentation.</span>
+
+<span class="sd">    Note that this frame does *not* have an ``obstime``, because it is</span>
+<span class="sd">    rotating with the Earth.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">default_representation</span> <span class="o">=</span> <span class="n">CartesianRepresentation</span>
+
+    <span class="n">obstime</span> <span class="o">=</span> <span class="n">TimeFrameAttribute</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_OBSTIME</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">earth_location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The data in this frame as an `~astropy.coordinates.EarthLocation` class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">..earth</span> <span class="kn">import</span> <span class="n">EarthLocation</span>
+
+        <span class="n">cart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">represent_as</span><span class="p">(</span><span class="n">CartesianRepresentation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EarthLocation</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cart</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">cart</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">cart</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+
+<span class="c"># Self-transform is in intermediate_rotation_transforms.py with all the other</span>
+<span class="c"># ITRS transforms</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

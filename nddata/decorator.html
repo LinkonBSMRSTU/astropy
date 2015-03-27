@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Decorating functions to accept NDData objects &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="up" title="N-dimensional datasets (astropy.nddata)" href="index.html" />
+    <link rel="next" title="Mixins for added functionality" href="mixins/index.html" />
+    <link rel="prev" title="NDData" href="nddata.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="mixins/index.html" title="Mixins for added functionality">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="nddata.html" title="NDData">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="index.html" accesskey="U">N-dimensional datasets (<tt class="docutils literal"><span class="pre">astropy.nddata</span></tt>)</a> &raquo;</li>
+      
+      <li>Decorating functions to accept NDData objects</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="decorating-functions-to-accept-nddata-objects">
+<h1>Decorating functions to accept NDData objects<a class="headerlink" href="#decorating-functions-to-accept-nddata-objects" title="Permalink to this headline">¶</a></h1>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">The functionality described here is still experimental and will
+likely evolve over time as more packages make use of it.</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="index.html#module-astropy.nddata" title="astropy.nddata"><tt class="xref py py-obj docutils literal"><span class="pre">astropy.nddata</span></tt></a> module includes a decorator
+<a class="reference internal" href="../api/astropy.nddata.support_nddata.html#astropy.nddata.support_nddata" title="astropy.nddata.support_nddata"><tt class="xref py py-func docutils literal"><span class="pre">support_nddata()</span></tt></a> that makes it easy for developers and
+users to write functions that can accept either <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-class docutils literal"><span class="pre">NDData</span></tt></a>
+objects and also separate arguments.</p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s consider the following function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Now let&#8217;s say that we want to be able to call the function as <tt class="docutils literal"><span class="pre">test(nd)</span></tt>
+where <tt class="docutils literal"><span class="pre">nd</span></tt> is a <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-class docutils literal"><span class="pre">NDData</span></tt></a> instance. We can decorate
+this function using <a class="reference internal" href="../api/astropy.nddata.support_nddata.html#astropy.nddata.support_nddata" title="astropy.nddata.support_nddata"><tt class="xref py py-func docutils literal"><span class="pre">support_nddata()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">astropy.nddata</span> <span class="kn">import</span> <span class="n">support_nddata</span>
+
+<span class="nd">@support_nddata</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>which makes it so that when the user calls <tt class="docutils literal"><span class="pre">test(nd)</span></tt>, the function would
+automatically be called with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">test</span><span class="p">(</span><span class="n">nd</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="n">nd</span><span class="o">.</span><span class="n">wcs</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">nd</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That is, the decorator looks at the signature of the function and checks if any
+of the arguments are also properties of the <tt class="docutils literal"><span class="pre">NDData</span></tt> object, and passes them
+as individual arguments. The function can also be called with separate
+arguments as if it wasn&#8217;t decorated.</p>
+<p>An exception is raised if an <tt class="docutils literal"><span class="pre">NDData</span></tt> property is set but the function does
+not accept it - for example, if <tt class="docutils literal"><span class="pre">wcs</span></tt> is set, but the function cannot support
+WCS objects, an error would be raised. On the other hand, if an argument in the
+function does not exist in the <tt class="docutils literal"><span class="pre">NDData</span></tt> object or is not set, it is simply
+left to its default value.</p>
+<p>If the function call succeeds, then the decorator returns the values from the
+function unmodified by default. However, in some cases we may want to return
+separate <tt class="docutils literal"><span class="pre">data</span></tt>, <tt class="docutils literal"><span class="pre">wcs</span></tt>, etc. if these were passed in separately, and a new
+<a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-class docutils literal"><span class="pre">NDData</span></tt></a> instance otherwise. To do this, you can specify
+<tt class="docutils literal"><span class="pre">repack=True</span></tt> in the decorator and provide a list of the names of the output
+arguments from the function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@support_nddata</span><span class="p">(</span><span class="n">repack</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;wcs&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>With this, the function will return separate values if <tt class="docutils literal"><span class="pre">test</span></tt> is called with
+separate arguments, and an object with the same class type as the input if the
+input is an <a class="reference internal" href="../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-class docutils literal"><span class="pre">NDData</span></tt></a> or subclass instance.</p>
+<p>Finally, the decorator can be made to restrict input to specific <tt class="docutils literal"><span class="pre">NDData</span></tt>
+sub-classes (and sub-classes of those) using the <tt class="docutils literal"><span class="pre">accepts</span></tt> option:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@support_nddata</span><span class="p">(</span><span class="n">accepts</span><span class="o">=</span><span class="n">CCDImage</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Decorating functions to accept NDData objects</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/nddata/decorator.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/nddata/decorator.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

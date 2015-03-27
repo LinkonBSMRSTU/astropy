@@ -1,0 +1,8 @@
+
+
+blackbody_lambda
+=====================================================
+
+.. currentmodule:: astropy.analytic_functions.blackbody
+
+.. autofunction:: blackbody_lambda

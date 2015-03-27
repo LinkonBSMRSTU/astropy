@@ -1,0 +1,10 @@
+
+.. include:: ../wcs/references.txt
+
+
+wcs_to_celestial_frame
+========================================
+
+.. currentmodule:: astropy.wcs.utils
+
+.. autofunction:: wcs_to_celestial_frame

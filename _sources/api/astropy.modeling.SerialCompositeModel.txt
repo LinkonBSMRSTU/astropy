@@ -1,0 +1,44 @@
+
+
+SerialCompositeModel
+=====================================
+
+.. currentmodule:: astropy.modeling
+
+.. autoclass:: SerialCompositeModel
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~SerialCompositeModel.inverse
+
+   
+   
+
+   
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: inverse
+
+   
+   
+
+   
+   
+   

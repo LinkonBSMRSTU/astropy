@@ -1,0 +1,8 @@
+
+
+scale_image
+=================================
+
+.. currentmodule:: astropy.visualization
+
+.. autofunction:: scale_image

@@ -1,0 +1,8 @@
+
+
+deprecated_attribute
+=============================================
+
+.. currentmodule:: astropy.utils.decorators
+
+.. autofunction:: deprecated_attribute

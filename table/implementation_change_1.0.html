@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Table implementation change in 1.0 &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="up" title="Data Tables (astropy.table)" href="index.html" />
+    <link rel="next" title="hstack" href="../api/astropy.table.hstack.html" />
+    <link rel="prev" title="Table implementation details" href="implementation_details.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="../api/astropy.table.hstack.html" title="hstack">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="implementation_details.html" title="Table implementation details">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="index.html" accesskey="U">Data Tables (<tt class="docutils literal"><span class="pre">astropy.table</span></tt>)</a> &raquo;</li>
+      
+      <li>Table implementation change in 1.0</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="table-implementation-change-in-1-0">
+<span id="table-implementation-change"></span><h1>Table implementation change in 1.0<a class="headerlink" href="#table-implementation-change-in-1-0" title="Permalink to this headline">¶</a></h1>
+<p>This page discusses the change in the internal implementation of the <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table" title="astropy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a>
+class which took place starting from version 1.0 of astropy.  The motivation
+for making this change is discussed in the <a class="reference internal" href="#benefits">Benefits</a> section.</p>
+<div class="section" id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="data-container">
+<h3>Data container<a class="headerlink" href="#data-container" title="Permalink to this headline">¶</a></h3>
+<p>The images below illustrate the basic architecture of the <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table" title="astropy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> class for
+astropy versions 0.4.x and earlier (left) and after version 1.0 (right).</p>
+<p>On the left side (before 1.0) the fundamental data container is a numpy
+structured array referenced as an internal attribute <tt class="docutils literal"><span class="pre">_data</span></tt>.  All public
+methods and operations (e.g. column access, row indexing) are done via this
+internal <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.9)"><tt class="xref py py-obj docutils literal"><span class="pre">ndarray</span></tt></a> object.  The <tt class="docutils literal"><span class="pre">columns</span></tt> attribute is used to manage
+table columns and provide access.  It is a <a class="reference internal" href="../api/astropy.table.TableColumns.html#astropy.table.TableColumns" title="astropy.table.TableColumns"><tt class="xref py py-class docutils literal"><span class="pre">TableColumns</span></tt></a> object which is
+essentially an ordered dictionary of <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> or <a class="reference internal" href="../api/astropy.table.MaskedColumn.html#astropy.table.MaskedColumn" title="astropy.table.MaskedColumn"><tt class="xref py py-class docutils literal"><span class="pre">MaskedColumn</span></tt></a> objects which
+provide views of the <tt class="docutils literal"><span class="pre">_data</span></tt> array.</p>
+<p>On the right side (after 1.0) the fundamental data container is now the
+collection of individual column objects and there is no longer a structured
+array associated with the table.  Each <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> object is the sole owner of its
+data.  As before, the <tt class="docutils literal"><span class="pre">columns</span></tt> attribute is used to manage columns and
+provide access.</p>
+<p><a class="reference internal" href="../_images/table_before_1.0.png"><img alt="table_before" src="../_images/table_before_1.0.png" style="width: 45%;" /></a> <a class="reference internal" href="../_images/table_after_1.0.png"><img alt="table_after" src="../_images/table_after_1.0.png" style="width: 45%;" /></a></p>
+</div>
+<div class="section" id="columns">
+<h3>Columns<a class="headerlink" href="#columns" title="Permalink to this headline">¶</a></h3>
+<p>For versions before 1.0 the <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> object is an <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.9)"><tt class="xref py py-obj docutils literal"><span class="pre">ndarray</span></tt></a> subclass with
+a <em>memory view</em> of the corresponding column in the <tt class="docutils literal"><span class="pre">_data</span></tt> array.  This means
+that the physical memory for the <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> object data is exactly the same as
+the memory storing the <tt class="docutils literal"><span class="pre">_data</span></tt> array. Therefore updating an element in the
+column results in the corresponding update in the <tt class="docutils literal"><span class="pre">_data</span></tt> value.  This model
+is convenient in many ways, but also has drawbacks.  In particular, astropy
+tables are easily mutable (e.g. you can add or remove columns) while numpy
+structured arrays are not.  This means that key operations require
+regenerating the entire <tt class="docutils literal"><span class="pre">_data</span></tt> structured array and likewise regenerating
+all the <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> view objects.  This is relatively slow and results in
+additional code complexity to always ensure correspondence.</p>
+<p>Starting with version 1.0 the <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> object is the same <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.9)"><tt class="xref py py-obj docutils literal"><span class="pre">ndarray</span></tt></a>
+subclass but it is sole owner of the data.  This simplifies table management
+considerably along with making operations like adding or removing columns
+<em>much</em> faster because there is no structured array to regenerate.</p>
+<p><a class="reference internal" href="../_images/table_column_before_1.0.png"><img alt="column_before" src="../_images/table_column_before_1.0.png" style="width: 45%;" /></a> <a class="reference internal" href="../_images/table_column_after_1.0.png"><img alt="column_after" src="../_images/table_column_after_1.0.png" style="width: 45%;" /></a></p>
+</div>
+<div class="section" id="rows">
+<h3>Rows<a class="headerlink" href="#rows" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference internal" href="../api/astropy.table.Row.html#astropy.table.Row" title="astropy.table.Row"><tt class="xref py py-class docutils literal"><span class="pre">Row</span></tt></a> object corresponds to a single row in the table.  For versions before
+1.0, when a <a class="reference internal" href="../api/astropy.table.Row.html#astropy.table.Row" title="astropy.table.Row"><tt class="xref py py-class docutils literal"><span class="pre">Row</span></tt></a> object is requested it uses numpy indexing into the table
+<tt class="docutils literal"><span class="pre">_data</span></tt> array to generate a <tt class="docutils literal"><span class="pre">numpy.void</span></tt> or <tt class="docutils literal"><span class="pre">numpy.ma.mvoid</span></tt> object as the
+<tt class="docutils literal"><span class="pre">data</span></tt> attribute <a class="footnote-reference" href="#id2" id="id1">[1]</a>.  This delegates most of the row access functionality like
+<tt class="docutils literal"><span class="pre">row['a']</span></tt> to the numpy void classes. For unmasked tables this <tt class="docutils literal"><span class="pre">data</span></tt>
+attribute is a memory view of the parent table row, though for masked tables
+(due to the implementation of numpy masked arrays), the <tt class="docutils literal"><span class="pre">data</span></tt> attribute is
+<em>not</em> a view.</p>
+<p><a class="reference internal" href="../_images/table_row_before_1.0.png"><img alt="row_before" src="../_images/table_row_before_1.0.png" style="width: 73%;" /></a></p>
+<p>For version 1.0 and later, the <a class="reference internal" href="../api/astropy.table.Row.html#astropy.table.Row" title="astropy.table.Row"><tt class="xref py py-class docutils literal"><span class="pre">Row</span></tt></a> object does not create a view of the full
+row at any point.  Instead it manages access (like <tt class="docutils literal"><span class="pre">row['a']</span></tt>) dynamically in
+a way that maintains the same interface.  Due to improved implementation this
+is actually faster.</p>
+<p>The row <tt class="docutils literal"><span class="pre">data</span></tt> attribute is part of the public API before 1.0, therefore it
+is still available in 1.0 but as a <em>deprecated</em> property.  In this case
+accessing <tt class="docutils literal"><span class="pre">data</span></tt> runs the <a class="reference internal" href="../api/astropy.table.Row.html#astropy.table.Row.as_void" title="astropy.table.Row.as_void"><tt class="xref py py-obj docutils literal"><span class="pre">as_void()</span></tt></a> method to dynamically
+create and return a <tt class="docutils literal"><span class="pre">numpy.void</span></tt> or <tt class="docutils literal"><span class="pre">numpy.ma.mvoid</span></tt> object.  This provides a
+copy of the original data, not a view.  Code which was relying on the row
+<tt class="docutils literal"><span class="pre">data</span></tt> attribute as a <em>view</em> into the parent table will need to be modified.</p>
+<p><a class="reference internal" href="../_images/table_row_after_1.0.png"><img alt="row_after" src="../_images/table_row_after_1.0.png" style="width: 83%;" /></a></p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><tt class="docutils literal"><span class="pre">numpy.void</span></tt> is a <tt class="docutils literal"><span class="pre">dtype</span></tt> that can be used to represent structures
+of arbitrary byte width.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="differences">
+<h2>Differences<a class="headerlink" href="#differences" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="row-data">
+<h3><tt class="docutils literal"><span class="pre">Row.data</span></tt><a class="headerlink" href="#row-data" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="docutils literal"><span class="pre">data</span></tt> property of the <a class="reference internal" href="../api/astropy.table.Row.html#astropy.table.Row" title="astropy.table.Row"><tt class="xref py py-class docutils literal"><span class="pre">Row</span></tt></a> object is deprecated in version 1.0 and
+may be removed in a later version.  Code which requires access to a
+<tt class="docutils literal"><span class="pre">numpy.void</span></tt> or <tt class="docutils literal"><span class="pre">numpy.ma.mvoid</span></tt> object corresponding to a table row
+can now use the <a class="reference internal" href="../api/astropy.table.Row.html#astropy.table.Row.as_void" title="astropy.table.Row.as_void"><tt class="xref py py-obj docutils literal"><span class="pre">as_void()</span></tt></a> method.  This is public and
+stable, with the caveat that it is relatively slow and returns a copy of the
+row data, not a view.</p>
+</div>
+<div class="section" id="table-data">
+<h3><tt class="docutils literal"><span class="pre">Table._data</span></tt><a class="headerlink" href="#table-data" title="Permalink to this headline">¶</a></h3>
+<p>While the <tt class="docutils literal"><span class="pre">_data</span></tt> property of the <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table" title="astropy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object is not part of the public
+API in any astropy release, some users may have let this creep into their
+code as back-door access to the numpy object.  In version 1.0 this attribute is
+formally deprecated and will generate a warning.</p>
+<p>From 1.0 the public method for getting the corresponding numpy structured array
+or masked array version of a table is the <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table" title="astropy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> method
+<a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table.as_array" title="astropy.table.Table.as_array"><tt class="xref py py-obj docutils literal"><span class="pre">as_array()</span></tt></a>.  This dynamically generates the requested
+object, making a copy of the table data.  Be aware that the <tt class="docutils literal"><span class="pre">_data</span></tt> property
+calls <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table.as_array" title="astropy.table.Table.as_array"><tt class="xref py py-obj docutils literal"><span class="pre">as_array()</span></tt></a>, so accessing <tt class="docutils literal"><span class="pre">_data</span></tt> will
+effectively double the memory usage of the table.</p>
+<p>An alternative is to use <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.9)"><tt class="xref py py-obj docutils literal"><span class="pre">array</span></tt></a> to do the conversion, e.g. for an
+astropy <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table" title="astropy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object named <tt class="docutils literal"><span class="pre">dat</span></tt> use <tt class="docutils literal"><span class="pre">np_dat</span> <span class="pre">=</span> <span class="pre">np.array(dat)</span></tt>.  Be aware that
+for a masked table this operation always returns a pure <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.9)"><tt class="xref py py-obj docutils literal"><span class="pre">ndarray</span></tt></a>
+with data corresponding to the unmasked values.</p>
+</div>
+<div class="section" id="high-level-operations">
+<h3>High-level operations<a class="headerlink" href="#high-level-operations" title="Permalink to this headline">¶</a></h3>
+<p>In version 1.0 the operations described in <a class="reference internal" href="operations.html#table-operations"><em>Table operations</em></a> rely on
+<a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table.as_array" title="astropy.table.Table.as_array"><tt class="xref py py-obj docutils literal"><span class="pre">as_array()</span></tt></a> to create numpy structured arrays which
+are used in the actual array manipulations.  This creates temporary copies of
+the tables.</p>
+</div>
+<div class="section" id="performance-regressions">
+<h3>Performance regressions<a class="headerlink" href="#performance-regressions" title="Permalink to this headline">¶</a></h3>
+<p>From version 1.0 most common operations run at the same speed or are faster
+(sometimes significantly faster).  The only operations which are noticeably
+slower are adding a row in a masked table (~2 times slower) and setting a
+column like <tt class="docutils literal"><span class="pre">dat['a'][:]</span> <span class="pre">=</span> <span class="pre">10</span></tt> in a masked table (~6 times slower).</p>
+</div>
+</div>
+<div class="section" id="benefits">
+<h2>Benefits<a class="headerlink" href="#benefits" title="Permalink to this headline">¶</a></h2>
+<p>The key benefits of the version 1.0 change are as follows:</p>
+<ul>
+<li><p class="first">Allows for much faster addition or removal of columns.  A common idiom is
+creating a table and then adding columns:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Prior to 1.0 this idiom was extremely inefficient because the underlying
+structured array was being entirely regenerated with each column addition.
+From 1.0 forward this is fast and a good way to write code.</p>
+</li>
+<li><p class="first">Provides the infrastructure to allow for Tables to easily hold column types
+beyond just <a class="reference internal" href="../api/astropy.table.Column.html#astropy.table.Column" title="astropy.table.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a> and <a class="reference internal" href="../api/astropy.table.MaskedColumn.html#astropy.table.MaskedColumn" title="astropy.table.MaskedColumn"><tt class="xref py py-class docutils literal"><span class="pre">MaskedColumn</span></tt></a>.  This includes
+<a class="reference internal" href="../api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><tt class="xref py py-obj docutils literal"><span class="pre">Quantity</span></tt></a>, <a class="reference internal" href="../api/astropy.time.Time.html#astropy.time.Time" title="astropy.time.Time"><tt class="xref py py-obj docutils literal"><span class="pre">Time</span></tt></a>, and
+<a class="reference internal" href="../api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="astropy.coordinates.SkyCoord"><tt class="xref py py-obj docutils literal"><span class="pre">SkyCoord</span></tt></a> objects.  Other ideas like nested <a class="reference internal" href="../api/astropy.table.Table.html#astropy.table.Table" title="astropy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a>
+objects are also possible.</p>
+</li>
+<li><p class="first">Generally faster because of improved implementation in key areas.
+Column-based access is faster because the column data are held in contiguous
+memory instead of being strided within the numpy structure array.</p>
+</li>
+<li><p class="first">Reduces code complexity in a number of core table routines.</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Table implementation change in 1.0</a><ul>
+<li><a class="reference internal" href="#architecture">Architecture</a><ul>
+<li><a class="reference internal" href="#data-container">Data container</a></li>
+<li><a class="reference internal" href="#columns">Columns</a></li>
+<li><a class="reference internal" href="#rows">Rows</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#differences">Differences</a><ul>
+<li><a class="reference internal" href="#row-data"><tt class="docutils literal"><span class="pre">Row.data</span></tt></a></li>
+<li><a class="reference internal" href="#table-data"><tt class="docutils literal"><span class="pre">Table._data</span></tt></a></li>
+<li><a class="reference internal" href="#high-level-operations">High-level operations</a></li>
+<li><a class="reference internal" href="#performance-regressions">Performance regressions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#benefits">Benefits</a></li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/table/implementation_change_1.0.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/table/implementation_change_1.0.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

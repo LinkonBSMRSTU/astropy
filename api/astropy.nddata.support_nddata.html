@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>support_nddata &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="up" title="N-dimensional datasets (astropy.nddata)" href="../nddata/index.html" />
+    <link rel="next" title="Conf" href="astropy.nddata.Conf.html" />
+    <link rel="prev" title="overlap_slices" href="astropy.nddata.utils.overlap_slices.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="astropy.nddata.Conf.html" title="Conf">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="astropy.nddata.utils.overlap_slices.html" title="overlap_slices">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../nddata/index.html" accesskey="U">N-dimensional datasets (<tt class="docutils literal"><span class="pre">astropy.nddata</span></tt>)</a> &raquo;</li>
+      
+      <li>support_nddata</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="support-nddata">
+<h1>support_nddata<a class="headerlink" href="#support-nddata" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="astropy.nddata.support_nddata">
+<tt class="descclassname">astropy.nddata.</tt><tt class="descname">support_nddata</tt><big>(</big><em>_func=None</em>, <em>accepts=&lt;class 'astropy.nddata.nddata.NDData'&gt;</em>, <em>repack=False</em>, <em>returns=None</em><big>)</big><a class="reference internal" href="../_modules/astropy/nddata/decorators.html#support_nddata"><span class="viewcode-link">[source]</span></a><a class="reference external" href="http://github.com/astropy/astropy/tree/master/astropy/nddata/decorators.py#L17" title="Push the Edit button on the next page"><span class="edit-on-github viewcode-link">&nbsp;[edit on github]</span></a><a class="headerlink" href="#astropy.nddata.support_nddata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to split NDData properties into function arguments.</p>
+<p>This is a decorator to allow functions to take NDData objects as their
+first arguments and split up the properties into kwargs as required by the
+function. For example, if you consider the following function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">downsample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c"># downsample data and optionally WCS here</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This function takes a Numpy array for the data, and some WCS information
+with the <tt class="docutils literal"><span class="pre">data</span></tt> keyword argument. However, you might have an NDData
+instance that has the <tt class="docutils literal"><span class="pre">wcs</span></tt> property set and you would like to be able to
+call the function with <tt class="docutils literal"><span class="pre">downsample(my_nddata)</span></tt> and have the WCS
+information, if present, automatically be passed to the <tt class="docutils literal"><span class="pre">wcs</span></tt> keyword
+argument.</p>
+<p>This decorator can be used to make this possible:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@support_nddata</span>
+<span class="k">def</span> <span class="nf">downsample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wcs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c"># downsample data and optionally WCS here</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This function can now either be called as before, specifying the data and
+WCS separately, or an NDData instance can be passed to the <tt class="docutils literal"><span class="pre">data</span></tt>
+argument.</p>
+<p>The restrictions on functions to use this function are:</p>
+<ul class="simple">
+<li>The first positional argument should be <tt class="docutils literal"><span class="pre">data</span></tt> and take a Numpy array.</li>
+<li>The following arguments can optionally be specified in the function
+signature, but if they are specified they should be keyword arguments:
+<tt class="docutils literal"><span class="pre">uncertainty</span></tt>, <tt class="docutils literal"><span class="pre">mask</span></tt>, <tt class="docutils literal"><span class="pre">meta</span></tt>, <tt class="docutils literal"><span class="pre">unit</span></tt>, and <tt class="docutils literal"><span class="pre">wcs</span></tt>. If
+you are making use of this decorator, you should be prepared for these
+keyword arguments to be set to the properties of the NDData object (if
+present).</li>
+</ul>
+<p>The behavior of the decorator is to check through the NDData properties and
+if they are set, it checks if the function accepts them as keyword
+arguments. If an NDData property is set but cannot be passed to a keyword
+argument, a warning is emitted to tell the user that the NDData property in
+question will not be used by the function (to ensure that they know when
+e.g. uncertainties cannot be used).</p>
+<p>If the user passes an NDData object <em>and</em> explicitly sets a keyword
+argument that is one of the valid NDData properties, a warning is emitted
+to inform the user that the explicitly specified value will take priority.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">support_nddata</a></li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/api/astropy.nddata.support_nddata.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/api/astropy.nddata.support_nddata.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

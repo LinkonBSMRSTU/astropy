@@ -1,0 +1,61 @@
+
+.. include:: ../time/references.txt
+
+
+TimeDecimalYear
+============================
+
+.. currentmodule:: astropy.time
+
+.. autoclass:: TimeDecimalYear
+   :show-inheritance:
+
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~TimeDecimalYear.name
+      ~TimeDecimalYear.value
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~TimeDecimalYear.set_jds
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: name
+   .. autoattribute:: value
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: set_jds
+
+   
+   

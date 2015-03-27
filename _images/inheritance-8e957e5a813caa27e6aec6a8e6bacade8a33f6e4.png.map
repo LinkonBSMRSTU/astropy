@@ -1,0 +1,8 @@
+<map id="inheritance1d47659767" name="inheritance1d47659767">
+<area shape="rect" id="node1" href="../api/astropy.modeling.rotations.EulerAngleRotation.html#astropy.modeling.rotations.EulerAngleRotation" title="Implements Euler angle intrinsic rotations." alt="" coords="125,5,268,31"/>
+<area shape="rect" id="node2" href="../api/astropy.modeling.Model.html#astropy.modeling.Model" title="Base class for all models." alt="" coords="5,55,77,80"/>
+<area shape="rect" id="node4" title="Base class for FITS WCS sky rotations." alt="" coords="145,55,249,80"/>
+<area shape="rect" id="node6" href="../api/astropy.modeling.rotations.Rotation2D.html#astropy.modeling.rotations.Rotation2D" title="Perform a 2D rotation given an angle in degrees." alt="" coords="151,104,243,129"/>
+<area shape="rect" id="node3" href="../api/astropy.modeling.rotations.RotateCelestial2Native.html#astropy.modeling.rotations.RotateCelestial2Native" title="Transform from Celestial to Native to Spherical Coordinates." alt="" coords="316,31,483,56"/>
+<area shape="rect" id="node5" href="../api/astropy.modeling.rotations.RotateNative2Celestial.html#astropy.modeling.rotations.RotateNative2Celestial" title="Transform from Native to Celestial Spherical Coordinates." alt="" coords="316,80,483,105"/>
+</map>

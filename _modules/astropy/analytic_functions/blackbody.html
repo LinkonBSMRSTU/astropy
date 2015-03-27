@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.analytic_functions.blackbody &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.analytic_functions.blackbody</h1><div class="highlight"><pre>
+<span class="c"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;Functions related to blackbody radiation.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+
+<span class="c"># STDLIB</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="c"># THIRD-PARTY</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c"># LOCAL</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span> <span class="nn">..utils.exceptions</span> <span class="kn">import</span> <span class="n">AstropyUserWarning</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;blackbody_nu&#39;</span><span class="p">,</span> <span class="s">&#39;blackbody_lambda&#39;</span><span class="p">]</span>
+
+<span class="c"># Units</span>
+<span class="n">FNU</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">)</span>
+<span class="n">FLAM</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="blackbody_nu"><a class="viewcode-back" href="../../../api/astropy.analytic_functions.blackbody.blackbody_nu.html#astropy.analytic_functions.blackbody.blackbody_nu">[docs]</a><span class="k">def</span> <span class="nf">blackbody_nu</span><span class="p">(</span><span class="n">in_x</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate blackbody flux per steradian, :math:`B_{\\nu}(T)`.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Use `numpy.errstate` to suppress Numpy warnings, if desired.</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        Output values might contain ``nan`` and ``inf``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in_x : number, array-like, or `~astropy.units.Quantity`</span>
+<span class="sd">        Frequency, wavelength, or wave number.</span>
+<span class="sd">        If not a Quantity, it is assumed to be in Hz.</span>
+
+<span class="sd">    temperature : number or `~astropy.units.Quantity`</span>
+<span class="sd">        Blackbody temperature.</span>
+<span class="sd">        If not a Quantity, it is assumed to be in Kelvin.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    flux : `~astropy.units.Quantity`</span>
+<span class="sd">        Blackbody monochromatic flux in</span>
+<span class="sd">        :math:`erg \\; cm^{-2} s^{-1} Hz^{-1} sr^{-1}`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Invalid temperature.</span>
+
+<span class="sd">    ZeroDivisionError</span>
+<span class="sd">        Wavelength is zero (when converting to frequency).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Convert to units for calculations, also force double precision</span>
+    <span class="k">with</span> <span class="n">u</span><span class="o">.</span><span class="n">add_enabled_equivalencies</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">()</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">temperature</span><span class="p">()):</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">in_x</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="c"># Check if input values are physically possible</span>
+    <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Invalid temperature {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">freq</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>  <span class="c"># pragma: no cover</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Input contains invalid wavelength/frequency value(s)&#39;</span><span class="p">,</span>
+                      <span class="n">AstropyUserWarning</span><span class="p">)</span>
+
+    <span class="c"># Calculate blackbody flux</span>
+    <span class="n">bb_nu</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">const</span><span class="o">.</span><span class="n">h</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">/</span>
+             <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">c</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">h</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">/</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">k_B</span> <span class="o">*</span> <span class="n">temp</span><span class="p">))))</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="n">bb_nu</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">FNU</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">spectral_density</span><span class="p">(</span><span class="n">freq</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span>  <span class="c"># Add per steradian to output flux unit</span>
+
+</div>
+<div class="viewcode-block" id="blackbody_lambda"><a class="viewcode-back" href="../../../api/astropy.analytic_functions.blackbody.blackbody_lambda.html#astropy.analytic_functions.blackbody.blackbody_lambda">[docs]</a><span class="k">def</span> <span class="nf">blackbody_lambda</span><span class="p">(</span><span class="n">in_x</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Like :func:`blackbody_nu` but for :math:`B_{\\lambda}(T)`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in_x : number, array-like, or `~astropy.units.Quantity`</span>
+<span class="sd">        Frequency, wavelength, or wave number.</span>
+<span class="sd">        If not a Quantity, it is assumed to be in Angstrom.</span>
+
+<span class="sd">    temperature : number or `~astropy.units.Quantity`</span>
+<span class="sd">        Blackbody temperature.</span>
+<span class="sd">        If not a Quantity, it is assumed to be in Kelvin.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    flux : `~astropy.units.Quantity`</span>
+<span class="sd">        Blackbody monochromatic flux in</span>
+<span class="sd">        :math:`erg \\; cm^{-2} s^{-1} \\AA^{-1} sr^{-1}`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">in_x</span><span class="p">,</span> <span class="s">&#39;unit&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">in_x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">in_x</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span>
+
+    <span class="n">bb_nu</span> <span class="o">=</span> <span class="n">blackbody_nu</span><span class="p">(</span><span class="n">in_x</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span>  <span class="c"># Remove sr for conversion</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="n">bb_nu</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">FLAM</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">spectral_density</span><span class="p">(</span><span class="n">in_x</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span>  <span class="c"># Add per steradian to output flux unit</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

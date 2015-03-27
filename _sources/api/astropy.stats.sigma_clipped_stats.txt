@@ -1,0 +1,8 @@
+
+
+sigma_clipped_stats
+=================================
+
+.. currentmodule:: astropy.stats
+
+.. autofunction:: sigma_clipped_stats

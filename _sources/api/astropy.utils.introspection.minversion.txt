@@ -1,0 +1,8 @@
+
+
+minversion
+======================================
+
+.. currentmodule:: astropy.utils.introspection
+
+.. autofunction:: minversion

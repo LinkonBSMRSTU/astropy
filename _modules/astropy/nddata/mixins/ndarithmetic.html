@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.nddata.mixins.ndarithmetic &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../../index.html" />
+    <link rel="up" title="astropy.nddata" href="../../nddata.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+      <li><a href="../../nddata.html" accesskey="U">astropy.nddata</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.nddata.mixins.ndarithmetic</h1><div class="highlight"><pre>
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+# This module implements the Arithmetic mixin to the NDData class.
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+from copy import deepcopy
+
+import numpy as np
+
+from ... units import dimensionless_unscaled, UnitsError
+from ... import log
+from ..nduncertainty import IncompatibleUncertaintiesException
+
+__all__ = [&#39;NDArithmeticMixin&#39;]
+
+
+<div class="viewcode-block" id="NDArithmeticMixin"><a class="viewcode-back" href="../../../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin">[docs]</a>class NDArithmeticMixin(object):
+    &quot;&quot;&quot;
+    Mixin class to add arithmetic to an NDData object.
+
+    When subclassing, be sure to list the superclasses in the correct order
+    so that the subclass sees NDData as the main superclass. See
+    `~astropy.nddata.NDDataArray` for an example.
+    &quot;&quot;&quot;
+    def _arithmetic(self, operand, propagate_uncertainties, name, operation):
+        &quot;&quot;&quot;
+        {name} another dataset (``operand``) to this dataset.
+
+        Parameters
+        ----------
+        operand : `~astropy.nddata.NDData`
+            The second operand in the operation a {operator} b
+
+        propagate_uncertainties : bool
+            Whether to propagate uncertainties following the propagation rules
+            defined by the class used for the ``uncertainty`` attribute.
+
+        Returns
+        -------
+        result : `~astropy.nddata.NDData`
+            The resulting dataset
+
+        Notes
+        -----
+        This method requires the datasets to have identical WCS
+        properties, equivalent units, and identical shapes.
+        Meta-data get set to None in the resulting dataset. The unit
+        in the result is the same as the unit in ``self``. Uncertainties
+        are propagated, although correlated errors are not supported
+        by any of the built-in uncertainty classes.  If uncertainties
+        are assumed to be correlated, a warning is issued by default
+        (though this can be disabled via the
+        ``astropy.nddata.conf.warn_unsupported_correlated``
+        configuration item). Values masked in either dataset before
+        the operation are masked in the resulting dataset.
+        &quot;&quot;&quot;
+
+        from .. import conf
+
+        if self.wcs != operand.wcs:
+            raise ValueError(&quot;WCS properties do not match&quot;)
+
+        # get a sensible placeholder if .unit is None
+        self_unit = self.unit or dimensionless_unscaled
+        operand_unit = operand.unit or dimensionless_unscaled
+
+        # This check could be rolled into the calculation of the result
+        # but checking now avoids a potentially expensive calculation that
+        # would fail anyway.
+        try:
+            # Quantity is designed to work with numpy ufuncs, but plain
+            # Unit is not, so convert units to quantities
+            result_unit = operation(1 * self_unit, 1 * operand_unit).unit
+        except UnitsError:
+            # current API raises ValueError in this case, not UnitError
+            raise ValueError(&quot;operand units do not match&quot;)
+
+        if self.data.shape != operand.data.shape:
+            raise ValueError(&quot;operand shapes do not match&quot;)
+
+        # Instead of manually scaling the operand data just let Quantity
+        # handle it.
+        # Order of the arguments is important here if the operation is
+        # addition or subtraction and the units of the operands are different
+        # but compatible. NDData follows the convention that Quantity follows
+        # in that case, with the units of the first operand (i.e. self)
+        # determining the units of the result.
+        data = operation(self.data * self_unit, operand.data * operand_unit)
+
+        result_unit = data.unit
+        # If neither self nor operand had units then should return a result
+        # that has no unit. A check that the result_unit is dimensionless
+        # should not be necessary, but also does no harm.
+        if self.unit is None and operand.unit is None:
+            if result_unit is dimensionless_unscaled:
+                result_unit = None
+            else:
+                raise ValueError(&quot;arithmetic result was not unitless even &quot;
+                                 &quot;though operands were unitless&quot;)
+        data = data.value
+        new_wcs = deepcopy(self.wcs)
+
+        # Call __class__ in case we are dealing with an inherited type
+        result = self.__class__(data, uncertainty=None,
+                                mask=None, wcs=new_wcs,
+                                meta=None, unit=result_unit)
+
+        # Prepare to scale uncertainty if it is needed
+        if operand.uncertainty:
+            operand_uncert_value = operand.uncertainty.array
+
+        # By this point the arithmetic has succeeded, so the input units were
+        # consistent with each other given the operation.
+        #
+        # If the operation is addition or subtraction then need to ensure that
+        # the uncertainty of the operand is the same units as the result
+        # (which will be the same as self.unit).
+
+        # The data ought to also be scaled in this case -- for addition of
+        # a StdDevUncertainty this isn&#39;t really necessary but other
+        # uncertainties when added/subtracted may depend on both the operand
+        # uncertainty and the operand data.
+
+        # Since the .unit.to methods create a copy, avoid the conversion
+        # unless it is necessary.
+        if (operation in [np.add, np.subtract] and
+                self.unit != operand.unit):
+            operand_data = operand.unit.to(self.unit, operand.data)
+            if operand.uncertainty:
+                operand_uncert_value = operand.unit.to(self.unit,
+                                                       operand_uncert_value)
+        else:
+            operand_data = operand.data
+
+        if operand.uncertainty:
+            # Create a copy here in case this is returned as the uncertainty
+            # of the result.
+            operand_uncertainty = \
+                operand.uncertainty.__class__(operand_uncert_value, copy=True)
+        else:
+            operand_uncertainty = None
+
+        if propagate_uncertainties is None:
+            result.uncertainty = None
+        elif self.uncertainty is None and operand.uncertainty is None:
+            result.uncertainty = None
+        elif self.uncertainty is None:
+            result.uncertainty = operand_uncertainty
+        elif operand.uncertainty is None:
+            result.uncertainty = self.uncertainty.__class__(self.uncertainty,
+                                                            copy=True)
+        else:  # both self and operand have uncertainties
+            if (conf.warn_unsupported_correlated and
+                (not self.uncertainty.support_correlated or
+                 not operand.uncertainty.support_correlated)):
+                log.info(&quot;The uncertainty classes used do not support the &quot;
+                         &quot;propagation of correlated errors, so uncertainties&quot;
+                         &quot; will be propagated assuming they are uncorrelated&quot;)
+            operand_scaled = operand.__class__(operand_data,
+                                               uncertainty=operand_uncertainty,
+                                               unit=operand.unit,
+                                               wcs=operand.wcs,
+                                               mask=operand.mask,
+                                               meta=operand.meta)
+            try:
+                method = getattr(self.uncertainty, propagate_uncertainties)
+                result.uncertainty = method(operand_scaled, result.data)
+            except IncompatibleUncertaintiesException:
+                raise IncompatibleUncertaintiesException(
+                    &quot;Cannot propagate uncertainties of type {0:s} with &quot;
+                    &quot;uncertainties of type {1:s} for {2:s}&quot;.format(
+                        self.uncertainty.__class__.__name__,
+                        operand.uncertainty.__class__.__name__,
+                        name))
+
+        if self.mask is None and operand.mask is None:
+            result.mask = None
+        elif self.mask is None:
+            result.mask = operand.mask.copy()
+        elif operand.mask is None:
+            result.mask = self.mask.copy()
+        else:  # combine masks as for Numpy masked arrays
+            result.mask = self.mask | operand.mask  # copy implied by operator
+
+        return result
+
+<div class="viewcode-block" id="NDArithmeticMixin.add"><a class="viewcode-back" href="../../../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.add">[docs]</a>    def add(self, operand, propagate_uncertainties=True):
+        if propagate_uncertainties:
+            propagate_uncertainties = &quot;propagate_add&quot;
+        else:
+            propagate_uncertainties = None
+        return self._arithmetic(
+            operand, propagate_uncertainties, &quot;addition&quot;, np.add)</div>
+    add.__doc__ = _arithmetic.__doc__.format(name=&quot;Add&quot;, operator=&quot;+&quot;)
+
+<div class="viewcode-block" id="NDArithmeticMixin.subtract"><a class="viewcode-back" href="../../../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.subtract">[docs]</a>    def subtract(self, operand, propagate_uncertainties=True):
+        if propagate_uncertainties:
+            propagate_uncertainties = &quot;propagate_subtract&quot;
+        else:
+            propagate_uncertainties = None
+        return self._arithmetic(
+            operand, propagate_uncertainties, &quot;subtraction&quot;, np.subtract)</div>
+    subtract.__doc__ = _arithmetic.__doc__.format(name=&quot;Subtract&quot;,
+                                                  operator=&quot;-&quot;)
+
+<div class="viewcode-block" id="NDArithmeticMixin.multiply"><a class="viewcode-back" href="../../../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.multiply">[docs]</a>    def multiply(self, operand, propagate_uncertainties=True):
+        if propagate_uncertainties:
+            propagate_uncertainties = &quot;propagate_multiply&quot;
+        else:
+            propagate_uncertainties = None
+        return self._arithmetic(
+            operand, propagate_uncertainties, &quot;multiplication&quot;, np.multiply)</div>
+    multiply.__doc__ = _arithmetic.__doc__.format(name=&quot;Multiply&quot;,
+                                                  operator=&quot;*&quot;)
+
+<div class="viewcode-block" id="NDArithmeticMixin.divide"><a class="viewcode-back" href="../../../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.divide">[docs]</a>    def divide(self, operand, propagate_uncertainties=True):
+        if propagate_uncertainties:
+            propagate_uncertainties = &quot;propagate_divide&quot;
+        else:
+            propagate_uncertainties = None
+        return self._arithmetic(
+            operand, propagate_uncertainties, &quot;division&quot;, np.divide)</div>
+    divide.__doc__ = _arithmetic.__doc__.format(name=&quot;Divide&quot;, operator=&quot;/&quot;)</div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+<map id="inheritancef2d95c1abd" name="inheritancef2d95c1abd">
+<area shape="rect" id="node1" href="../api/astropy.modeling.mappings.Identity.html#astropy.modeling.mappings.Identity" title="Returns inputs unchanged." alt="" coords="249,5,321,31"/>
+<area shape="rect" id="node2" href="../api/astropy.modeling.mappings.Mapping.html#astropy.modeling.mappings.Mapping" title="Allows inputs to be reordered, duplicated or dropped." alt="" coords="125,5,201,31"/>
+<area shape="rect" id="node3" href="../api/astropy.modeling.Model.html#astropy.modeling.Model" title="Base class for all models." alt="" coords="5,5,77,31"/>
+</map>

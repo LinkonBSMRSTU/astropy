@@ -1,0 +1,59 @@
+
+
+Pix2SkyProjection
+==============================================
+
+.. currentmodule:: astropy.modeling.projections
+
+.. autoclass:: Pix2SkyProjection
+   :show-inheritance:
+
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~Pix2SkyProjection.inputs
+      ~Pix2SkyProjection.outputs
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~Pix2SkyProjection.__call__
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: inputs
+   .. autoattribute:: outputs
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: __call__
+
+   
+   

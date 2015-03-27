@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Example: Observation Planning &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="up" title="Astronomical Coordinate Systems (astropy.coordinates)" href="index.html" />
+    <link rel="next" title="Formatting Coordinate Strings" href="formatting.html" />
+    <link rel="prev" title="Transforming Between Systems" href="transforming.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="formatting.html" title="Formatting Coordinate Strings">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="transforming.html" title="Transforming Between Systems">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="index.html" accesskey="U">Astronomical Coordinate Systems (<tt class="docutils literal"><span class="pre">astropy.coordinates</span></tt>)</a> &raquo;</li>
+      
+      <li>Example: Observation Planning</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="example-observation-planning">
+<span id="observing-example"></span><h1>Example: Observation Planning<a class="headerlink" href="#example-observation-planning" title="Permalink to this headline">¶</a></h1>
+<p>This example outlines a common use case for coordinate transformations:
+observability curves to assist planning or executing an observing run.
+This serves to demonstrate typical usage of <a class="reference internal" href="../api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="astropy.coordinates.SkyCoord"><tt class="xref py py-obj docutils literal"><span class="pre">SkyCoord</span></tt></a>
+and the transformation framework.</p>
+<p>Let&#8217;s suppose you are planning to visit picturesque
+<a class="reference external" href="https://www.google.com/maps/place/Bear+Mountain+State+Park/&#64;41.288417,-74.003729,11z">Bear Mountain State Park in New York, USA</a>.
+You&#8217;re bringing your telescope with you (of course), and someone told you M33 is
+a great target to observe there.  You happen to know you&#8217;re free at 11:00 pm
+local time, and you want to know if it will be up. Astropy can answer that.
+In the example below, we make a <a class="reference internal" href="../api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="astropy.coordinates.SkyCoord"><tt class="xref py py-obj docutils literal"><span class="pre">SkyCoord</span></tt></a> to look up
+the coordinates of M33 online, and then transform to horizontal coordinates
+(<a class="reference internal" href="../api/astropy.coordinates.AltAz.html#astropy.coordinates.AltAz" title="astropy.coordinates.AltAz"><tt class="xref py py-obj docutils literal"><span class="pre">AltAz</span></tt></a>) using an <a class="reference internal" href="../api/astropy.time.Time.html#astropy.time.Time" title="astropy.time.Time"><tt class="xref py py-obj docutils literal"><span class="pre">astropy.time.Time</span></tt></a> object for when
+we&#8217;re observing and an <a class="reference internal" href="../api/astropy.coordinates.EarthLocation.html#astropy.coordinates.EarthLocation" title="astropy.coordinates.EarthLocation"><tt class="xref py py-obj docutils literal"><span class="pre">EarthLocation</span></tt></a> object for the
+park:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.time</span> <span class="kn">import</span> <span class="n">Time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="kn">import</span> <span class="n">SkyCoord</span><span class="p">,</span> <span class="n">EarthLocation</span><span class="p">,</span> <span class="n">AltAz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m33</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="s">&#39;M33&#39;</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bear_mountain</span> <span class="o">=</span> <span class="n">EarthLocation</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">41.3</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">lon</span><span class="o">=-</span><span class="mi">74</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">390</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">utcoffset</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">hour</span>  <span class="c"># Eastern Daylight Time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s">&#39;2012-7-12 23:00:00&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">utcoffset</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m33altaz</span> <span class="o">=</span> <span class="n">m33</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">AltAz</span><span class="p">(</span><span class="n">obstime</span><span class="o">=</span><span class="n">time</span><span class="p">,</span><span class="n">location</span><span class="o">=</span><span class="n">bear_mountain</span><span class="p">))</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="s">&quot;M33&#39;s Altitude = {0.alt:.2}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m33altaz</span><span class="p">)</span>  
+<span class="go">&quot;M33&#39;s Altitude = 0.13 deg&quot;</span>
+</pre></div>
+</div>
+<p>Oops, so low of an altitude indicates M33 is only just rising, so the trees and
+mountains will be in the way. You&#8217;d better make a plot to see what the night is
+going to look like.  We&#8217;ll do it by airmass, too, because that&#8217;s a better
+measure of telescope observing conditions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">midnight</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s">&#39;2012-7-13 00:00:00&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">utcoffset</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delta_midnight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">hour</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m33altazs</span> <span class="o">=</span> <span class="n">m33</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">AltAz</span><span class="p">(</span><span class="n">obstime</span><span class="o">=</span><span class="n">midnight</span><span class="o">+</span><span class="n">delta_midnight</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">bear_mountain</span><span class="p">))</span>  
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">delta_midnight</span><span class="p">,</span> <span class="n">m33altazs</span><span class="o">.</span><span class="n">secz</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Hours from EDT Midnight&#39;</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Airmass [Sec(z)]&#39;</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../coordinates/observing-example-1.py">Source code</a>, <a class="reference external" href="../coordinates/observing-example-1.png">png</a>, <a class="reference external" href="../coordinates/observing-example-1.hires.png">hires.png</a>, <a class="reference external" href="../coordinates/observing-example-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="../_images/observing-example-1.png" src="../_images/observing-example-1.png" />
+</div>
+<p>Hmm, looks like you may need to stay up pretty late.  But maybe you&#8217;re an
+early-riser?  Then you need to know when the sun is rising, and when
+it will be twilight. We can get the sun&#8217;s location with
+<a class="reference internal" href="../api/astropy.coordinates.get_sun.html#astropy.coordinates.get_sun" title="astropy.coordinates.get_sun"><tt class="xref py py-obj docutils literal"><span class="pre">get_sun</span></tt></a> and then plot the altitude and color-code by
+azimuth:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="kn">import</span> <span class="n">get_sun</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delta_midnight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">hour</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">times</span> <span class="o">=</span> <span class="n">midnight</span> <span class="o">+</span> <span class="n">delta_midnight</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">altazframe</span> <span class="o">=</span> <span class="n">AltAz</span><span class="p">(</span><span class="n">obstime</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">bear_mountain</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sunaltazs</span> <span class="o">=</span> <span class="n">get_sun</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">altazframe</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m33altazs</span> <span class="o">=</span> <span class="n">m33</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">altazframe</span><span class="p">)</span>  
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">delta_midnight</span><span class="p">,</span> <span class="n">sunaltazs</span><span class="o">.</span><span class="n">alt</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Sun&#39;</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">delta_midnight</span><span class="p">,</span> <span class="n">m33altazs</span><span class="o">.</span><span class="n">alt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">m33altazs</span><span class="o">.</span><span class="n">az</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;M33&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">delta_midnight</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="n">sunaltazs</span><span class="o">.</span><span class="n">alt</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">0</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">delta_midnight</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="n">sunaltazs</span><span class="o">.</span><span class="n">alt</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">18</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&#39;Azimuth [deg]&#39;</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span><span class="mi">12</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Hours from EDT Midnight&#39;</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Altitude [deg]&#39;</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../coordinates/observing-example-2.py">Source code</a>, <a class="reference external" href="../coordinates/observing-example-2.png">png</a>, <a class="reference external" href="../coordinates/observing-example-2.hires.png">hires.png</a>, <a class="reference external" href="../coordinates/observing-example-2.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="../_images/observing-example-2.png" src="../_images/observing-example-2.png" />
+</div>
+<p>Now you&#8217;re fully-equipped with the tools you need to plan your next
+observing run... Or have have a proper vacation.  You decide!</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Example: Observation Planning</a></li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/coordinates/observing-example.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/coordinates/observing-example.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

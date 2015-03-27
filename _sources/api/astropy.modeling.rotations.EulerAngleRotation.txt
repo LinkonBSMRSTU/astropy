@@ -1,0 +1,77 @@
+
+
+EulerAngleRotation
+=============================================
+
+.. currentmodule:: astropy.modeling.rotations
+
+.. autoclass:: EulerAngleRotation
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~EulerAngleRotation.inputs
+      ~EulerAngleRotation.inverse
+      ~EulerAngleRotation.outputs
+      ~EulerAngleRotation.param_names
+      ~EulerAngleRotation.phi
+      ~EulerAngleRotation.psi
+      ~EulerAngleRotation.theta
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~EulerAngleRotation.__call__
+      ~EulerAngleRotation.eval
+      ~EulerAngleRotation.evaluate
+      ~EulerAngleRotation.spherical2cartesian
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: inputs
+   .. autoattribute:: inverse
+   .. autoattribute:: outputs
+   .. autoattribute:: param_names
+   .. autoattribute:: phi
+   .. autoattribute:: psi
+   .. autoattribute:: theta
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: __call__
+   .. automethod:: eval
+   .. automethod:: evaluate
+   .. automethod:: spherical2cartesian
+
+   
+   

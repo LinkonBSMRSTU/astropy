@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Analytic Functions (astropy.analytic_functions) &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+    <link rel="next" title="blackbody_nu" href="../api/astropy.analytic_functions.blackbody.blackbody_nu.html" />
+    <link rel="prev" title="leastsquare" href="../api/astropy.modeling.statistic.leastsquare.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="../api/astropy.analytic_functions.blackbody.blackbody_nu.html" title="blackbody_nu">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="../api/astropy.modeling.statistic.leastsquare.html" title="leastsquare">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      
+      <li>Analytic Functions (<tt class="docutils literal"><span class="pre">astropy.analytic_functions</span></tt>)</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="analytic-functions-astropy-analytic-functions">
+<span id="astropy-analytic-functions"></span><h1>Analytic Functions (<tt class="docutils literal"><span class="pre">astropy.analytic_functions</span></tt>)<a class="headerlink" href="#analytic-functions-astropy-analytic-functions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">astropy.analytic_functions</span></tt> subpackage provides analytic functions that
+are commonly used in astronomy. These already understand
+<a class="reference internal" href="../api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><tt class="xref py py-obj docutils literal"><span class="pre">Quantity</span></tt></a>, i.e., they can handle units of input and output
+parameters.</p>
+<p>In future versions of <tt class="docutils literal"><span class="pre">astropy</span></tt>, many of these might be accessible as
+<a class="reference internal" href="../api/astropy.modeling.Model.html#astropy.modeling.Model" title="astropy.modeling.core.Model"><tt class="xref py py-obj docutils literal"><span class="pre">Model</span></tt></a>.</p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.analytic_functions</span> <span class="kn">import</span> <span class="n">blackbody_lambda</span><span class="p">,</span> <span class="n">blackbody_nu</span>
+</pre></div>
+</div>
+<p>Calculate blackbody flux for 10000 K at 6000 Angstrom:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">blackbody_lambda</span><span class="p">(</span><span class="mi">6000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">,</span> <span class="mi">10000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+<span class="go">&lt;Quantity 15315791.836941158 erg / (Angstrom cm2 s sr)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blackbody_nu</span><span class="p">(</span><span class="mi">6000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">,</span> <span class="mi">10000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+<span class="go">&lt;Quantity 0.00018391673686797075 erg / (cm2 Hz s sr)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-astropy-analytic-functions">
+<h2>Using <tt class="docutils literal"><span class="pre">astropy.analytic_functions</span></tt><a class="headerlink" href="#using-astropy-analytic-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="blackbody-radiation">
+<span id="blackbody-planck-law"></span><h3>Blackbody Radiation<a class="headerlink" href="#blackbody-radiation" title="Permalink to this headline">¶</a></h3>
+<p>Blackbody flux is calculated with Planck law
+(<a class="reference internal" href="#ref-rybicki1979"><em>Rybicki &amp; Lightman 1979</em></a>):</p>
+<div class="math">
+<p><img src="../_images/math/ff02539a7095f623c694b27fa71b8f664213dc98.png" alt="B_{\lambda}(T) = \frac{2 h c^{2} / \lambda^{5}}{exp(h c / \lambda k T) - 1}
+
+B_{\nu}(T) = \frac{2 h \nu^{3} / c^{2}}{exp(h \nu / k T) - 1}"/></p>
+</div><p>where the unit of <img class="math" src="../_images/math/d7bcb70cb7564a44b367429ba531a48ccbfbcaa8.png" alt="B_{\lambda}(T)"/> is
+<img class="math" src="../_images/math/8f6ef0d7f6d6c2ca860f2a3736430fe3bced28b3.png" alt="erg \; s^{-1} cm^{-2} \AA^{-1} sr^{-1}"/>, and <img class="math" src="../_images/math/4ba86b4c9bb82085089abff78a6c0ab94e571da8.png" alt="B_{\nu}(T)"/> is
+<img class="math" src="../_images/math/1625f24f0deca9a0f31df388674967457200f5aa.png" alt="erg \; s^{-1} cm^{-2} Hz^{-1} sr^{-1}"/>.
+<a class="reference internal" href="../api/astropy.analytic_functions.blackbody.blackbody_lambda.html#astropy.analytic_functions.blackbody.blackbody_lambda" title="astropy.analytic_functions.blackbody.blackbody_lambda"><tt class="xref py py-func docutils literal"><span class="pre">blackbody_lambda()</span></tt></a> and
+<a class="reference internal" href="../api/astropy.analytic_functions.blackbody.blackbody_nu.html#astropy.analytic_functions.blackbody.blackbody_nu" title="astropy.analytic_functions.blackbody.blackbody_nu"><tt class="xref py py-func docutils literal"><span class="pre">blackbody_nu()</span></tt></a> calculate the
+blackbody flux for <img class="math" src="../_images/math/d7bcb70cb7564a44b367429ba531a48ccbfbcaa8.png" alt="B_{\lambda}(T)"/> and <img class="math" src="../_images/math/4ba86b4c9bb82085089abff78a6c0ab94e571da8.png" alt="B_{\nu}(T)"/>, respectively.</p>
+<div class="section" id="examples">
+<span id="blackbody-examples"></span><h4>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.analytic_functions</span> <span class="kn">import</span> <span class="n">blackbody_lambda</span><span class="p">,</span> <span class="n">blackbody_nu</span>
+</pre></div>
+</div>
+<p>Calculate blackbody flux for 5000 K at 100 and 10000 Angstrom while suppressing
+any Numpy warnings:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">wavelengths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">temperature</span> <span class="o">=</span> <span class="mi">5000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="nb">all</span><span class="o">=</span><span class="s">&#39;ignore&#39;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">flux_lam</span> <span class="o">=</span> <span class="n">blackbody_lambda</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">flux_nu</span> <span class="o">=</span> <span class="n">blackbody_nu</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flux_lam</span>
+<span class="go">Quantity [1.27452545e-108, 7.10190526e+005] erg / (Angstrom cm2 s sr)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flux_nu</span>
+<span class="go">&lt;Quantity [4.25135927e-123, 2.36894060e-005] erg / (cm2 Hz s sr)&gt;</span>
+</pre></div>
+</div>
+<p>Plot a blackbody spectrum for 5000 K:</p>
+<p>(<a class="reference external" href="../analytic_functions/index-1.py">Source code</a>, <a class="reference external" href="../analytic_functions/index-1.png">png</a>, <a class="reference external" href="../analytic_functions/index-1.hires.png">hires.png</a>, <a class="reference external" href="../analytic_functions/index-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="../_images/index-1.png" src="../_images/index-1.png" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p id="ref-rybicki1979">Rybicki, G. B., &amp; Lightman, A. P. 1979, Radiative Processes in Astrophysics (New York, NY: Wiley)</p>
+</div>
+<div class="section" id="reference-api">
+<h2>Reference/API<a class="headerlink" href="#reference-api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-astropy.analytic_functions.blackbody">
+<span id="astropy-analytic-functions-blackbody-module"></span><h3>astropy.analytic_functions.blackbody Module<a class="headerlink" href="#module-astropy.analytic_functions.blackbody" title="Permalink to this headline">¶</a></h3>
+<p>Functions related to blackbody radiation.</p>
+<div class="section" id="functions">
+<h4>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.analytic_functions.blackbody.blackbody_nu.html#astropy.analytic_functions.blackbody.blackbody_nu" title="astropy.analytic_functions.blackbody.blackbody_nu"><tt class="xref py py-obj docutils literal"><span class="pre">blackbody_nu</span></tt></a>(in_x,&nbsp;temperature)</td>
+<td>Calculate blackbody flux per steradian, <img class="math" src="../_images/math/4ba86b4c9bb82085089abff78a6c0ab94e571da8.png" alt="B_{\nu}(T)"/>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api/astropy.analytic_functions.blackbody.blackbody_lambda.html#astropy.analytic_functions.blackbody.blackbody_lambda" title="astropy.analytic_functions.blackbody.blackbody_lambda"><tt class="xref py py-obj docutils literal"><span class="pre">blackbody_lambda</span></tt></a>(in_x,&nbsp;temperature)</td>
+<td>Like <a class="reference internal" href="../api/astropy.analytic_functions.blackbody.blackbody_nu.html#astropy.analytic_functions.blackbody.blackbody_nu" title="astropy.analytic_functions.blackbody.blackbody_nu"><tt class="xref py py-func docutils literal"><span class="pre">blackbody_nu()</span></tt></a> but for <img class="math" src="../_images/math/d7bcb70cb7564a44b367429ba531a48ccbfbcaa8.png" alt="B_{\lambda}(T)"/>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Analytic Functions (<tt class="docutils literal"><span class="pre">astropy.analytic_functions</span></tt>)</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#using-astropy-analytic-functions">Using <tt class="docutils literal"><span class="pre">astropy.analytic_functions</span></tt></a><ul>
+<li><a class="reference internal" href="#blackbody-radiation">Blackbody Radiation</a><ul>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#reference-api">Reference/API</a><ul>
+<li><a class="reference internal" href="#module-astropy.analytic_functions.blackbody">astropy.analytic_functions.blackbody Module</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/analytic_functions/index.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/analytic_functions/index.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

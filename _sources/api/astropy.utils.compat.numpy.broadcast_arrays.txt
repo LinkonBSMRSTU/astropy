@@ -1,0 +1,8 @@
+
+
+broadcast_arrays
+===========================================
+
+.. currentmodule:: astropy.utils.compat.numpy
+
+.. autofunction:: broadcast_arrays

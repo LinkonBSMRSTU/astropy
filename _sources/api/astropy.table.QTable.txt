@@ -1,0 +1,31 @@
+
+.. include:: ../table/references.txt
+
+
+QTable
+====================
+
+.. currentmodule:: astropy.table
+
+.. autoclass:: QTable
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   

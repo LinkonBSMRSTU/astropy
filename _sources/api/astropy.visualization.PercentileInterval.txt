@@ -1,0 +1,29 @@
+
+
+PercentileInterval
+========================================
+
+.. currentmodule:: astropy.visualization
+
+.. autoclass:: PercentileInterval
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   

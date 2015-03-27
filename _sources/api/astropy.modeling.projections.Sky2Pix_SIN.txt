@@ -1,0 +1,57 @@
+
+
+Sky2Pix_SIN
+========================================
+
+.. currentmodule:: astropy.modeling.projections
+
+.. autoclass:: Sky2Pix_SIN
+   :show-inheritance:
+
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~Sky2Pix_SIN.inverse
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~Sky2Pix_SIN.evaluate
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: inverse
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: evaluate
+
+   
+   

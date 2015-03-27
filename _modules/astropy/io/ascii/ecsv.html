@@ -1,0 +1,526 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.io.ascii.ecsv &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.io.ascii.ecsv</h1><div class="highlight"><pre>
+<span class="c"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Define the Enhanced Character-Separated-Values (ECSV) which allows for reading and</span>
+<span class="sd">writing all the meta data associated with an astropy Table object.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">...utils</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">...extern</span> <span class="kn">import</span> <span class="n">six</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">core</span><span class="p">,</span> <span class="n">basic</span>
+<span class="kn">from</span> <span class="nn">...table.column</span> <span class="kn">import</span> <span class="n">col_getattr</span>
+
+<span class="n">ECSV_VERSION</span> <span class="o">=</span> <span class="s">&#39;0.9&#39;</span>
+<span class="n">DELIMITERS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">ColumnOrderList</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    List of tuples that sorts in a specific order that makes sense for</span>
+<span class="sd">    astropy table column attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ColumnOrderList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="n">column_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;unit&#39;</span><span class="p">,</span> <span class="s">&#39;datatype&#39;</span><span class="p">,</span> <span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="s">&#39;meta&#39;</span><span class="p">]</span>
+        <span class="n">in_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">out_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">column_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">in_dict</span><span class="p">:</span>
+                <span class="n">out_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">in_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_keys</span><span class="p">:</span>
+                <span class="n">out_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+
+        <span class="c"># Clear list in-place</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="p">[:]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">out_list</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">ColumnDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Specialized dict subclass to represent attributes of a Column</span>
+<span class="sd">    and return items() in a preferred order.  This is only for use</span>
+<span class="sd">    in generating a YAML map representation that has a fixed order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return items as a ColumnOrderList, which sorts in the preferred</span>
+<span class="sd">        way for column attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ColumnOrderList</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">ColumnDict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">_construct_odict</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct OrderedDict from !!omap in yaml safe load.</span>
+
+<span class="sd">    Source: https://gist.github.com/weaver/317164</span>
+<span class="sd">    License: Unspecified</span>
+
+<span class="sd">    This is the same as SafeConstructor.construct_yaml_omap(),</span>
+<span class="sd">    except the data type is changed to OrderedDict() and setitem is</span>
+<span class="sd">    used instead of append in the loop</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    ::</span>
+
+<span class="sd">      &gt;&gt;&gt; yaml.load(&#39;&#39;&#39;  # doctest: +SKIP</span>
+<span class="sd">      ... !!omap</span>
+<span class="sd">      ... - foo: bar</span>
+<span class="sd">      ... - mumble: quux</span>
+<span class="sd">      ... - baz: gorp</span>
+<span class="sd">      ... &#39;&#39;&#39;)</span>
+<span class="sd">      OrderedDict([(&#39;foo&#39;, &#39;bar&#39;), (&#39;mumble&#39;, &#39;quux&#39;), (&#39;baz&#39;, &#39;gorp&#39;)])</span>
+
+<span class="sd">      &gt;&gt;&gt; yaml.load(&#39;&#39;&#39;!!omap [ foo: bar, mumble: quux, baz : gorp ]&#39;&#39;&#39;)  # doctest: +SKIP</span>
+<span class="sd">      OrderedDict([(&#39;foo&#39;, &#39;bar&#39;), (&#39;mumble&#39;, &#39;quux&#39;), (&#39;baz&#39;, &#39;gorp&#39;)])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">yaml</span>
+
+    <span class="n">omap</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">yield</span> <span class="n">omap</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">SequenceNode</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">yaml</span><span class="o">.</span><span class="n">constructor</span><span class="o">.</span><span class="n">ConstructorError</span><span class="p">(</span>
+            <span class="s">&quot;while constructing an ordered map&quot;</span><span class="p">,</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">start_mark</span><span class="p">,</span>
+            <span class="s">&quot;expected a sequence, but found </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">start_mark</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">subnode</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subnode</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">MappingNode</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">yaml</span><span class="o">.</span><span class="n">constructor</span><span class="o">.</span><span class="n">ConstructorError</span><span class="p">(</span>
+                <span class="s">&quot;while constructing an ordered map&quot;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">start_mark</span><span class="p">,</span>
+                <span class="s">&quot;expected a mapping of length 1, but found </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">subnode</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="n">subnode</span><span class="o">.</span><span class="n">start_mark</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subnode</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">yaml</span><span class="o">.</span><span class="n">constructor</span><span class="o">.</span><span class="n">ConstructorError</span><span class="p">(</span>
+                <span class="s">&quot;while constructing an ordered map&quot;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">start_mark</span><span class="p">,</span>
+                <span class="s">&quot;expected a single mapping item, but found </span><span class="si">%d</span><span class="s"> items&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">subnode</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="n">subnode</span><span class="o">.</span><span class="n">start_mark</span>
+            <span class="p">)</span>
+        <span class="n">key_node</span><span class="p">,</span> <span class="n">value_node</span> <span class="o">=</span> <span class="n">subnode</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">load</span><span class="o">.</span><span class="n">construct_object</span><span class="p">(</span><span class="n">key_node</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">load</span><span class="o">.</span><span class="n">construct_object</span><span class="p">(</span><span class="n">value_node</span><span class="p">)</span>
+        <span class="n">omap</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+
+<span class="k">def</span> <span class="nf">_repr_pairs</span><span class="p">(</span><span class="n">dump</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">flow_style</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the same code as BaseRepresenter.represent_sequence(),</span>
+<span class="sd">    but the value passed to dump.represent_data() in the loop is a</span>
+<span class="sd">    dictionary instead of a tuple.</span>
+
+<span class="sd">    Source: https://gist.github.com/weaver/317164</span>
+<span class="sd">    License: Unspecified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">yaml</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">SequenceNode</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">flow_style</span><span class="o">=</span><span class="n">flow_style</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dump</span><span class="o">.</span><span class="n">alias_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">dump</span><span class="o">.</span><span class="n">represented_objects</span><span class="p">[</span><span class="n">dump</span><span class="o">.</span><span class="n">alias_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+    <span class="n">best_style</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">:</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">dump</span><span class="o">.</span><span class="n">represent_data</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">style</span><span class="p">):</span>
+            <span class="n">best_style</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">flow_style</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dump</span><span class="o">.</span><span class="n">default_flow_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">flow_style</span> <span class="o">=</span> <span class="n">dump</span><span class="o">.</span><span class="n">default_flow_style</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">flow_style</span> <span class="o">=</span> <span class="n">best_style</span>
+    <span class="k">return</span> <span class="n">node</span>
+
+
+<span class="k">def</span> <span class="nf">_repr_odict</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represent OrderedDict in yaml dump.</span>
+
+<span class="sd">    Source: https://gist.github.com/weaver/317164</span>
+<span class="sd">    License: Unspecified</span>
+
+<span class="sd">    &gt;&gt;&gt; data = OrderedDict([(&#39;foo&#39;, &#39;bar&#39;), (&#39;mumble&#39;, &#39;quux&#39;), (&#39;baz&#39;, &#39;gorp&#39;)])</span>
+<span class="sd">    &gt;&gt;&gt; yaml.dump(data, default_flow_style=False)  # doctest: +SKIP</span>
+<span class="sd">    &#39;!!omap\\n- foo: bar\\n- mumble: quux\\n- baz: gorp\\n&#39;</span>
+<span class="sd">    &gt;&gt;&gt; yaml.dump(data, default_flow_style=True)  # doctest: +SKIP</span>
+<span class="sd">    &#39;!!omap [foo: bar, mumble: quux, baz: gorp]\\n&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_repr_pairs</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="s">u&#39;tag:yaml.org,2002:omap&#39;</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_repr_column_dict</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represent ColumnDict in yaml dump.</span>
+
+<span class="sd">    This is the same as an ordinary mapping except that the keys</span>
+<span class="sd">    are written in a fixed order that makes sense for astropy table</span>
+<span class="sd">    columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_mapping</span><span class="p">(</span><span class="s">u&#39;tag:yaml.org,2002:map&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_col_attributes</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract information from a column (apart from the values) that is required</span>
+<span class="sd">    to fully serialize the column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s">&#39;shape&#39;</span><span class="p">,</span> <span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;ECSV format does not support multidimensional column &#39;{0}&#39;&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col_getattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)))</span>
+
+    <span class="n">attrs</span> <span class="o">=</span> <span class="n">ColumnDict</span><span class="p">()</span>
+    <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_getattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+
+    <span class="n">type_name</span> <span class="o">=</span> <span class="n">col_getattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s">&#39;dtype&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">__name__</span>
+    <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="ow">and</span> <span class="p">(</span><span class="n">type_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;bytes&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">type_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">)):</span>
+        <span class="n">type_name</span> <span class="o">=</span> <span class="s">&#39;string&#39;</span>
+    <span class="k">if</span> <span class="n">type_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+        <span class="n">type_name</span> <span class="o">=</span> <span class="n">type_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># string_ and bool_ lose the final _ for ECSV</span>
+    <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;datatype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">type_name</span>
+
+    <span class="c"># Set the output attributes</span>
+    <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">nontrivial</span><span class="p">,</span> <span class="n">xform</span> <span class="ow">in</span> <span class="p">((</span><span class="s">&#39;unit&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s">&#39;meta&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="bp">None</span><span class="p">)):</span>
+        <span class="n">col_attr</span> <span class="o">=</span> <span class="n">col_getattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nontrivial</span><span class="p">(</span><span class="n">col_attr</span><span class="p">):</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">xform</span><span class="p">(</span><span class="n">col_attr</span><span class="p">)</span> <span class="k">if</span> <span class="n">xform</span> <span class="k">else</span> <span class="n">col_attr</span>
+
+    <span class="k">return</span> <span class="n">attrs</span>
+
+
+
+<span class="k">class</span> <span class="nc">EcsvHeader</span><span class="p">(</span><span class="n">basic</span><span class="o">.</span><span class="n">BasicHeader</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Header class for which the column definition line starts with the</span>
+<span class="sd">    comment character.  See the :class:`CommentedHeader` class  for an example.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">process_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return only non-blank lines that start with the comment regexp.  For these</span>
+<span class="sd">        lines strip out the matching characters and leading/trailing whitespace.&quot;&quot;&quot;</span>
+        <span class="n">re_comment</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re_comment</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():]</span>
+                <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">out</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Stop iterating on first failed match for a non-blank line</span>
+                <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write header information in the ECSV ASCII format.  This format</span>
+<span class="sd">        starts with a delimiter separated list of the column names in order</span>
+<span class="sd">        to make this format readable by humans and simple csv-type readers.</span>
+<span class="sd">        It then encodes the full table meta and column attributes and meta</span>
+<span class="sd">        as YAML and pretty-prints this in the header.  Finally the delimited</span>
+<span class="sd">        column names are repeated again, for humans and readers that look</span>
+<span class="sd">        for the *last* comment line as defining the column names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">yaml</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s">&#39;`import yaml` failed, PyYAML package is required for ECSV format&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">TableDumper</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Custom Dumper that represents OrderedDict as an !!omap object.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">def</span> <span class="nf">represent_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">flow_style</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                This is a combination of the Python 2 and 3 versions of this method</span>
+<span class="sd">                in the PyYAML library to allow the required key ordering via the</span>
+<span class="sd">                ColumnOrderList object.  The Python 3 version insists on turning the</span>
+<span class="sd">                items() mapping into a list object and sorting, which results in</span>
+<span class="sd">                alphabetical order for the column keys.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">MappingNode</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">flow_style</span><span class="o">=</span><span class="n">flow_style</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">represented_objects</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">alias_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">best_style</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="s">&#39;items&#39;</span><span class="p">):</span>
+                    <span class="n">mapping</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="s">&#39;sort&#39;</span><span class="p">):</span>
+                        <span class="n">mapping</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">mapping</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">mapping</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                            <span class="k">pass</span>
+
+                <span class="k">for</span> <span class="n">item_key</span><span class="p">,</span> <span class="n">item_value</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">:</span>
+                    <span class="n">node_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">represent_data</span><span class="p">(</span><span class="n">item_key</span><span class="p">)</span>
+                    <span class="n">node_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">represent_data</span><span class="p">(</span><span class="n">item_value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">node_key</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">node_key</span><span class="o">.</span><span class="n">style</span><span class="p">):</span>
+                        <span class="n">best_style</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">node_value</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">node_value</span><span class="o">.</span><span class="n">style</span><span class="p">):</span>
+                        <span class="n">best_style</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="n">value</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node_key</span><span class="p">,</span> <span class="n">node_value</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">flow_style</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_flow_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="n">node</span><span class="o">.</span><span class="n">flow_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_flow_style</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">node</span><span class="o">.</span><span class="n">flow_style</span> <span class="o">=</span> <span class="n">best_style</span>
+                <span class="k">return</span> <span class="n">node</span>
+
+        <span class="n">TableDumper</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">,</span> <span class="n">_repr_odict</span><span class="p">)</span>
+        <span class="n">TableDumper</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">ColumnDict</span><span class="p">,</span> <span class="n">_repr_column_dict</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">delimiter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DELIMITERS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;only space and comma are allowed for delimiter in ECVS format&#39;</span><span class="p">)</span>
+
+        <span class="c"># Now assemble the header dict that will be serialized by the YAML dumper</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_meta</span><span class="p">:</span>
+            <span class="n">header</span><span class="p">[</span><span class="s">&#39;meta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_meta</span>
+
+        <span class="n">header</span><span class="p">[</span><span class="s">&#39;datatype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_get_col_attributes</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">]</span>
+
+        <span class="c"># Set the delimiter only for the non-default option(s)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">delimiter</span> <span class="o">!=</span> <span class="s">&#39; &#39;</span><span class="p">:</span>
+            <span class="n">header</span><span class="p">[</span><span class="s">&#39;delimiter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">delimiter</span>
+
+        <span class="n">header_yaml</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">TableDumper</span><span class="p">)</span>
+        <span class="n">outs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;</span><span class="si">%E</span><span class="s">CSV {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ECSV_VERSION</span><span class="p">),</span> <span class="s">&#39;---&#39;</span><span class="p">]</span>
+        <span class="n">outs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">header_yaml</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">write_comment</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">outs</span><span class="p">])</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">col_getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">write_comments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">meta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override the default write_comments to do nothing since this is handled</span>
+<span class="sd">        in the custom write method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">meta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override the default update_meta to do nothing.  This process is done</span>
+<span class="sd">        in get_cols() for this reader.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the header Column objects from the table ``lines``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lines : list</span>
+<span class="sd">            List of table lines</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">textwrap</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">yaml</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s">&#39;`import yaml` failed, PyYAML package is required for ECSV format&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">TableLoader</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Custom Loader that constructs OrderedDict from an !!omap object.</span>
+<span class="sd">            This does nothing but provide a namespace for adding the</span>
+<span class="sd">            custom odict constructor.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="n">TableLoader</span><span class="o">.</span><span class="n">add_constructor</span><span class="p">(</span><span class="s">u&#39;tag:yaml.org,2002:omap&#39;</span><span class="p">,</span> <span class="n">_construct_odict</span><span class="p">)</span>
+
+        <span class="c"># Extract non-blank comment (header) lines with comment character stripped</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_lines</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+
+        <span class="c"># Validate that this is a ECSV file</span>
+        <span class="n">ecsv_header_re</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span><span class="si">%E</span><span class="s">CSV [ ]</span>
+<span class="s">                             (?P&lt;major&gt; \d+)</span>
+<span class="s">                             \. (?P&lt;minor&gt; \d+)</span>
+<span class="s">                             \.? (?P&lt;bugfix&gt; \d+)? $&quot;&quot;&quot;</span>
+
+        <span class="n">no_header_msg</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;ECSV header line like &quot;# </span><span class="si">%E</span><span class="s">CSV &lt;version&gt;&quot; not found as first line.&#39;</span>
+                         <span class="s">&#39;  This is required for a ECSV file.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">core</span><span class="o">.</span><span class="n">InconsistentTableError</span><span class="p">(</span><span class="n">no_header_msg</span><span class="p">)</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">ecsv_header_re</span><span class="p">,</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">core</span><span class="o">.</span><span class="n">InconsistentTableError</span><span class="p">(</span><span class="n">no_header_msg</span><span class="p">)</span>
+        <span class="c"># ecsv_version could be constructed here, but it is not currently used.</span>
+
+        <span class="c"># Now actually load the YAML data structure into `meta`</span>
+        <span class="n">header_yaml</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">header_yaml</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">TableLoader</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">core</span><span class="o">.</span><span class="n">InconsistentTableError</span><span class="p">(</span><span class="s">&#39;unable to parse yaml in header&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s">&#39;meta&#39;</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table_meta</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;meta&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s">&#39;delimiter&#39;</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+            <span class="n">delimiter</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;delimiter&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">delimiter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DELIMITERS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;only space and comma are allowed for delimiter in ECVS format&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">delimiter</span> <span class="o">=</span> <span class="n">delimiter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">delimiter</span> <span class="o">=</span> <span class="n">delimiter</span>
+
+        <span class="c"># Create the list of io.ascii column objects from `header`</span>
+        <span class="n">header_cols</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;datatype&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;datatype&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_cols_from_names</span><span class="p">()</span>  <span class="c"># BaseHeader method to create self.cols</span>
+
+        <span class="c"># Transfer attributes from the column descriptor stored in the input</span>
+        <span class="c"># header YAML metadata to the new columns to create this table.</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="s">&#39;unit&#39;</span><span class="p">,</span> <span class="s">&#39;meta&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">header_cols</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">]:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">header_cols</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="n">attr</span><span class="p">])</span>
+            <span class="n">col</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">header_cols</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;datatype&#39;</span><span class="p">]</span>
+            <span class="c"># ECSV &quot;string&quot; means numpy dtype.kind == &#39;U&#39; AKA str in Python 3</span>
+            <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="ow">and</span> <span class="n">col</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s">&#39;string&#39;</span><span class="p">:</span>
+                <span class="n">col</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="s">&#39;str&#39;</span>
+            <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;complex&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;ecsv reader does not support complex number types&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">EcsvOutputter</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">TableOutputter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Output the table as an astropy.table.Table object.  This overrides the</span>
+<span class="sd">    default converters to be an empty list because there is no &quot;guessing&quot;</span>
+<span class="sd">    of the conversion function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">default_converters</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<div class="viewcode-block" id="Ecsv"><a class="viewcode-back" href="../../../../api/astropy.io.ascii.Ecsv.html#astropy.io.ascii.Ecsv">[docs]</a><span class="k">class</span> <span class="nc">Ecsv</span><span class="p">(</span><span class="n">basic</span><span class="o">.</span><span class="n">Basic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a file which conforms to the ECSV (Enhanced Character Separated</span>
+<span class="sd">    Values) format.  This format allows for specification of key table</span>
+<span class="sd">    and column meta-data, in particular the data type and unit.  For details</span>
+<span class="sd">    see: https://github.com/astropy/astropy-APEs/blob/master/APE6.rst.</span>
+
+<span class="sd">    For example::</span>
+
+<span class="sd">      # %ECSV 0.9</span>
+<span class="sd">      # ---</span>
+<span class="sd">      # columns:</span>
+<span class="sd">      # - {name: a, unit: m / s, type: int64, format: &#39;%03d&#39;}</span>
+<span class="sd">      # - {name: b, unit: km, type: int64, description: This is column b}</span>
+<span class="sd">      a b</span>
+<span class="sd">      001 2</span>
+<span class="sd">      004 3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_format_name</span> <span class="o">=</span> <span class="s">&#39;ecsv&#39;</span>
+    <span class="n">_description</span> <span class="o">=</span> <span class="s">&#39;Enhanced CSV&#39;</span>
+
+    <span class="n">header_class</span> <span class="o">=</span> <span class="n">EcsvHeader</span>
+    <span class="n">outputter_class</span> <span class="o">=</span> <span class="n">EcsvOutputter</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

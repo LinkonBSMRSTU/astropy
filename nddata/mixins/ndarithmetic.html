@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Arithmetic mixin &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../index.html" />
+    <link rel="up" title="Mixins for added functionality" href="index.html" />
+    <link rel="next" title="I/O mixin" href="ndio.html" />
+    <link rel="prev" title="Slicing mixin" href="ndslicing.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="ndio.html" title="I/O mixin">
+	  next &raquo;
+	</a>
+      </li>
+      <li class="right">
+	<a href="ndslicing.html" title="Slicing mixin">
+	  &laquo; previous
+	</a>
+	 |
+      </li>
+      <li>
+	<a href="../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../index.html" >N-dimensional datasets (<tt class="docutils literal"><span class="pre">astropy.nddata</span></tt>)</a> &raquo;</li>
+      <li><a href="index.html" accesskey="U">Mixins for added functionality</a> &raquo;</li>
+      
+      <li>Arithmetic mixin</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="arithmetic-mixin">
+<h1>Arithmetic mixin<a class="headerlink" href="#arithmetic-mixin" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin" title="astropy.nddata.NDArithmeticMixin"><tt class="xref py py-obj docutils literal"><span class="pre">NDArithmeticMixin</span></tt></a> adds methods for performing basic
+operations on <a class="reference internal" href="../../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> objects:
+<a class="reference internal" href="../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.add" title="astropy.nddata.NDArithmeticMixin.add"><tt class="xref py py-meth docutils literal"><span class="pre">add()</span></tt></a>,
+<a class="reference internal" href="../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.subtract" title="astropy.nddata.NDArithmeticMixin.subtract"><tt class="xref py py-meth docutils literal"><span class="pre">subtract()</span></tt></a>,
+<a class="reference internal" href="../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.multiply" title="astropy.nddata.NDArithmeticMixin.multiply"><tt class="xref py py-meth docutils literal"><span class="pre">multiply()</span></tt></a> and
+<a class="reference internal" href="../../api/astropy.nddata.NDArithmeticMixin.html#astropy.nddata.NDArithmeticMixin.divide" title="astropy.nddata.NDArithmeticMixin.divide"><tt class="xref py py-meth docutils literal"><span class="pre">divide()</span></tt></a>.</p>
+<p>The operations are permitted only if the two operands have the same WCS and
+shape and the units, if any, consistent with the operation performed.  The
+result is masked at a particular grid point if either of the operands is
+masked at that point.</p>
+<p>The operations include a framework to propagate uncertainties that are based
+on the classes <a class="reference internal" href="../../api/astropy.nddata.NDUncertainty.html#astropy.nddata.NDUncertainty" title="astropy.nddata.NDUncertainty"><tt class="xref py py-obj docutils literal"><span class="pre">NDUncertainty</span></tt></a>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Uncertainty propagation is still experimental, and does not take
+into account correlated uncertainties.</p>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>As with other mixins, using the arithmetic mixin starts with defining your own
+class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.nddata</span> <span class="kn">import</span> <span class="n">NDData</span><span class="p">,</span> <span class="n">NDArithmeticMixin</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyNDDataArithmetic</span><span class="p">(</span><span class="n">NDArithmeticMixin</span><span class="p">,</span> <span class="n">NDData</span><span class="p">):</span> <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Then, create instances of this new object with your data the way you would
+with a plain <a class="reference internal" href="../../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd1</span> <span class="o">=</span> <span class="n">MyNDDataArithmetic</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ndd2</span> <span class="o">=</span> <span class="n">MyNDDataArithmetic</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The mixin adds methods on these instances for combining them:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ndd1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ndd2</span><span class="p">)</span>
+<span class="go">MyNDDataArithmetic([ 4.,  6.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ndd2</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ndd1</span><span class="p">)</span>
+<span class="go">MyNDDataArithmetic([ 3.,  8.])</span>
+</pre></div>
+</div>
+<p>One important note: the order you list the mixins and <a class="reference internal" href="../../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a>
+matters; the base   class, <a class="reference internal" href="../../api/astropy.nddata.NDData.html#astropy.nddata.NDData" title="astropy.nddata.NDData"><tt class="xref py py-obj docutils literal"><span class="pre">NDData</span></tt></a> should be on the far
+right.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Arithmetic mixin</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/nddata/mixins/ndarithmetic.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../../_sources/nddata/mixins/ndarithmetic.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

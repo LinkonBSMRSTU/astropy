@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NumPy compatibility &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="numpy-compatibility">
+<span id="id1"></span><h1>NumPy compatibility<a class="headerlink" href="#numpy-compatibility" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://numpy.scipy.org/">NumPy</a> forms an essential basis for astropy, and astropy&#8217;s development has led
+to the identification of problems with some of numpy&#8217;s functionality. Often,
+these are corrected in later versions of numpy, but in order for astropy not
+to depend on these, work-arounds are made, usually in the code.  If functions
+are used in more than one place, however, it can be more convenient to provide
+patched routines. Hence, <a class="reference internal" href="#module-astropy.utils.compat.numpy" title="astropy.utils.compat.numpy"><tt class="xref py py-obj docutils literal"><span class="pre">astropy.utils.compat.numpy</span></tt></a>.</p>
+<div class="section" id="adding-a-patched-routine">
+<h2>Adding a patched routine<a class="headerlink" href="#adding-a-patched-routine" title="Permalink to this headline">¶</a></h2>
+<p>To ensure that patched code is only used when required, and that it will be
+easy to remove it if it is no longer needed for any supported version of
+<a class="reference external" href="http://numpy.scipy.org/">NumPy</a>, the following procedure should be used to add a patched routine:</p>
+<ul class="simple">
+<li>Copy over a correct version of the relevant numpy file to its
+corresponding location below the <tt class="docutils literal"><span class="pre">astropy/utils/compat/numpy</span></tt> directory.</li>
+<li>In this file, remove everything that does not have to be changed.  If
+necessary, import required pieces from numpy.</li>
+<li>Define a function that tests whether or not a patched version is needed, by
+directly testing whether the desired functionality is present. Suggested
+function names are <tt class="docutils literal"><span class="pre">PR####</span></tt> with a relevant numpy pull request number,
+or <tt class="docutils literal"><span class="pre">GE####</span></tt> with a version number.</li>
+<li>Place the redefinition of the relevant piece of code inside an <tt class="docutils literal"><span class="pre">if</span></tt>
+statement that uses the function just defined.  This should ensure that if a
+sufficiently high version of numpy is used, no replacement is made.</li>
+<li>In <tt class="docutils literal"><span class="pre">numpy/__init__.py</span></tt>, import your patched code.</li>
+<li>In <tt class="docutils literal"><span class="pre">numpy/tests</span></tt>, add a new test routine that tests that the patch is used
+when necessary (i.e., test the test function), and that it provides the
+desired functionality.</li>
+</ul>
+<p>For an example, see <tt class="docutils literal"><span class="pre">numpy/lib/stride_tricks.py</span></tt> and the corresponding
+<tt class="docutils literal"><span class="pre">numpy/tests/test_broadcast_arrays.py</span></tt>.</p>
+<p>Note that patched routines will normally only be considered if they are part
+of <a class="reference external" href="http://numpy.scipy.org/">NumPy</a>. Thus, if the patch concerns a new bug discovered in numpy, a <a class="reference external" href="https://github.com/numpy/numpy/pulls">pull
+request</a> should first be made to
+<a class="reference external" href="http://numpy.scipy.org/">NumPy</a> (which can of course form the basis of a <a class="reference external" href="https://github.com/astropy/astropy/pulls">pull request</a> to <tt class="docutils literal"><span class="pre">astropy</span></tt>).</p>
+</div>
+</div>
+<div class="section" id="reference-api">
+<h1>Reference/API<a class="headerlink" href="#reference-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-astropy.utils.compat.numpy">
+<span id="astropy-utils-compat-numpy-module"></span><h2>astropy.utils.compat.numpy Module<a class="headerlink" href="#module-astropy.utils.compat.numpy" title="Permalink to this headline">¶</a></h2>
+<p>NumPy functions and classes needed for astropy but not available
+in all supported NumPy versions.  See docs/utils/numpy.rst for details.</p>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api/astropy.utils.compat.numpy.broadcast_arrays.html#astropy.utils.compat.numpy.broadcast_arrays" title="astropy.utils.compat.numpy.broadcast_arrays"><tt class="xref py py-obj docutils literal"><span class="pre">broadcast_arrays</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Broadcast any number of arrays against each other.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">NumPy compatibility</a><ul>
+<li><a class="reference internal" href="#adding-a-patched-routine">Adding a patched routine</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reference-api">Reference/API</a><ul>
+<li><a class="reference internal" href="#module-astropy.utils.compat.numpy">astropy.utils.compat.numpy Module</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="http://github.com/astropy/astropy/tree/master/docs/utils/numpy.rst">Edit This Page on Github</a> &nbsp;
+    <a href="../_sources/utils/numpy.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

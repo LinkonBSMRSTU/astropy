@@ -1,0 +1,518 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.modeling._compound_deprecated &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.modeling._compound_deprecated</h1><div class="highlight"><pre>
+<span class="c"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains implementations of the old compound model interfaces that</span>
+<span class="sd">are now deprecated.</span>
+
+<span class="sd">The classes exported by this module should be imported from `astropy.modeling`</span>
+<span class="sd">rather than from `astropy.modeling.core` or from this module directly.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span>
+                        <span class="n">print_function</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">deprecated</span><span class="p">,</span> <span class="n">indent</span>
+<span class="kn">from</span> <span class="nn">..utils.compat.odict</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">..utils.exceptions</span> <span class="kn">import</span> <span class="n">AstropyDeprecationWarning</span>
+<span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="n">Model</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;LabeledInput&#39;</span><span class="p">,</span> <span class="s">&#39;SerialCompositeModel&#39;</span><span class="p">,</span> <span class="s">&#39;SummedCompositeModel&#39;</span><span class="p">]</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span><span class="s">&#39;1.0&#39;</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s">&#39;:ref:`compound-models` as described in the &#39;</span>
+                               <span class="s">&#39;Astropy documentation&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="LabeledInput"><a class="viewcode-back" href="../../../api/astropy.modeling.LabeledInput.html#astropy.modeling.LabeledInput">[docs]</a><span class="k">class</span> <span class="nc">LabeledInput</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used by `SerialCompositeModel` and `SummedCompositeModel` to choose input</span>
+<span class="sd">    data using labels.</span>
+
+<span class="sd">    This is a container assigning labels (names) to all input data arrays to a</span>
+<span class="sd">    composite model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : list</span>
+<span class="sd">        List of all input data</span>
+<span class="sd">    labels : list of strings</span>
+<span class="sd">        names matching each coordinate in data</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; y, x = np.mgrid[:5, :5]</span>
+<span class="sd">    &gt;&gt;&gt; l = np.arange(10)</span>
+<span class="sd">    &gt;&gt;&gt; labeled_input = LabeledInput([x, y, l], [&#39;x&#39;, &#39;y&#39;, &#39;pixel&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; labeled_input.x</span>
+<span class="sd">    array([[0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4]])</span>
+<span class="sd">    &gt;&gt;&gt; labeled_input[&#39;x&#39;]</span>
+<span class="sd">    array([[0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4],</span>
+<span class="sd">           [0, 1, 2, 3, 4]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Number of labels and data doesn&#39;t match&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">LabeledInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">LabeledInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="LabeledInput.add"><a class="viewcode-back" href="../../../api/astropy.modeling.LabeledInput.html#astropy.modeling.LabeledInput.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add input data to a LabeledInput object</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------</span>
+<span class="sd">        label : str</span>
+<span class="sd">            coordinate label</span>
+<span class="sd">        value : numerical type</span>
+<span class="sd">            coordinate value</span>
+<span class="sd">        kw : dictionary</span>
+<span class="sd">            if given this is a dictionary of ``{label: value}`` pairs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">label</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Expected label and value to be defined&quot;</span><span class="p">)</span>
+
+        <span class="n">kw</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LabeledInput.copy"><a class="viewcode-back" href="../../../api/astropy.modeling.LabeledInput.html#astropy.modeling.LabeledInput.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LabeledInput</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">_LabeledInputMapping</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labeled_input</span><span class="p">,</span> <span class="n">inmap</span><span class="p">,</span> <span class="n">outmap</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_input</span> <span class="o">=</span> <span class="n">labeled_input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inmap</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outmap</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_LabeledInputMapping</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;&lt;{0}&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;{0}({1} -&gt; {2})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_input</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labeled_input</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">class</span> <span class="nc">_CompositeModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all composite models.&quot;&quot;&quot;</span>
+
+    <span class="n">_operator</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">fittable</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">n_inputs</span><span class="p">,</span> <span class="n">n_outputs</span><span class="p">,</span> <span class="n">inmap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">outmap</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span> <span class="o">=</span> <span class="n">transforms</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">:</span>
+            <span class="n">param_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">param_names</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_CompositeModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param_names</span> <span class="o">=</span> <span class="n">param_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_inputs</span> <span class="o">=</span> <span class="n">n_inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_outputs</span> <span class="o">=</span> <span class="n">n_outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basic_transform</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span> <span class="o">=</span> <span class="n">inmap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span> <span class="o">=</span> <span class="n">outmap</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;&lt;{0}([</span><span class="se">\n</span><span class="s">{1}</span><span class="se">\n</span><span class="s">])&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="n">indent</span><span class="p">(</span><span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">),</span>
+                   <span class="n">width</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Model: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indent</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tr</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">inputs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_inputs</span>
+
+    <span class="nd">@n_inputs.setter</span>
+    <span class="k">def</span> <span class="nf">n_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s">&#39;Setting n_inputs on {0} objects is undefined and should not &#39;</span>
+            <span class="s">&#39;be used.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">),</span>
+            <span class="n">AstropyDeprecationWarning</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_inputs</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_outputs</span>
+
+    <span class="nd">@n_outputs.setter</span>
+    <span class="k">def</span> <span class="nf">n_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s">&#39;Setting n_outputs on {0} objects is undefined and should not &#39;</span>
+            <span class="s">&#39;be used.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">),</span>
+            <span class="n">AstropyDeprecationWarning</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_outputs</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">invert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;Subclasses should implement this&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s">&quot;Composite models do not currently support the .parameters &quot;</span>
+            <span class="s">&quot;array.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specialized `Model.evaluate` implementation that allows `LabeledInput`</span>
+<span class="sd">        inputs to be handled when calling this model.</span>
+
+<span class="sd">        This ignores any passed in parameter values, as _CompositeModels can&#39;t</span>
+<span class="sd">        be fitted anyways.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># Drop parameter arguments</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_inputs</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">LabeledInput</span><span class="p">):</span>
+            <span class="n">labeled_input</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">transform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_labeled_transform</span><span class="p">(</span><span class="n">labeled_input</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">labeled_input</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">n_outputs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">labeled_input</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">result</span><span class="p">):</span>
+                    <span class="n">labeled_input</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span>
+
+            <span class="k">return</span> <span class="n">labeled_input</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basic_transform</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">transform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                    <span class="n">transform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_basic_transform</span> <span class="o">=</span> <span class="n">transform</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basic_transform</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specialized `Model.__call__` implementation that allows</span>
+<span class="sd">        `LabeledInput` inputs to be handled when calling this model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_param_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">all_params</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">_param_sets</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">all_params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_labeled_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labeled_input</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build up a transformation graph that incorporates the instructions</span>
+<span class="sd">        encoded in the `LabeledInput` object.</span>
+
+<span class="sd">        This requires use of the ``_inmap`` and ``_outmap`` attributes set</span>
+<span class="sd">        when instantiating this `_CompositeModel`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Parameter &#39;inmap&#39; must be provided when &quot;</span>
+                            <span class="s">&quot;input is a labeled object.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Parameter &#39;outmap&#39; must be provided when &quot;</span>
+                            <span class="s">&quot;input is a labeled object&quot;</span><span class="p">)</span>
+
+        <span class="n">transforms</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">previous_outmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">inmap</span><span class="p">,</span> <span class="n">outmap</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">mapping</span> <span class="o">=</span> <span class="n">_LabeledInputMapping</span><span class="p">(</span><span class="n">labeled_input</span><span class="p">,</span> <span class="n">inmap</span><span class="p">,</span>
+                                           <span class="n">previous_outmap</span><span class="p">)</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span> <span class="o">|</span> <span class="n">model</span><span class="p">)</span>
+            <span class="n">previous_outmap</span> <span class="o">=</span> <span class="n">outmap</span>
+
+        <span class="k">return</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operator</span><span class="p">,</span> <span class="n">transforms</span><span class="p">)</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span><span class="s">&#39;1.0&#39;</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s">&#39;:ref:`compound-models` as described in the &#39;</span>
+                               <span class="s">&#39;Astropy documentation&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="SerialCompositeModel"><a class="viewcode-back" href="../../../api/astropy.modeling.SerialCompositeModel.html#astropy.modeling.SerialCompositeModel">[docs]</a><span class="k">class</span> <span class="nc">SerialCompositeModel</span><span class="p">(</span><span class="n">_CompositeModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Composite model that evaluates models in series.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    transforms : list</span>
+<span class="sd">        a list of transforms in the order to be executed</span>
+<span class="sd">    inmap : list of lists or None</span>
+<span class="sd">        labels in an input instance of LabeledInput</span>
+<span class="sd">        if None, the number of input coordinates is exactly what</span>
+<span class="sd">        the transforms expect</span>
+<span class="sd">    outmap : list or None</span>
+<span class="sd">        labels in an input instance of LabeledInput</span>
+<span class="sd">        if None, the number of output coordinates is exactly what</span>
+<span class="sd">        the transforms expect</span>
+<span class="sd">    n_inputs : int</span>
+<span class="sd">        dimension of input space (e.g. 2 for a spatial model)</span>
+<span class="sd">    n_outputs : int</span>
+<span class="sd">        dimension of output</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Output values of one model are used as input values of another.</span>
+<span class="sd">    Obviously the order of the models matters.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Apply a 2D rotation followed by a shift in x and y::</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from astropy.modeling import models, LabeledInput, SerialCompositeModel</span>
+<span class="sd">        &gt;&gt;&gt; y, x = np.mgrid[:5, :5]</span>
+<span class="sd">        &gt;&gt;&gt; rotation = models.Rotation2D(angle=23.5)</span>
+<span class="sd">        &gt;&gt;&gt; offset_x = models.Shift(-4.23)</span>
+<span class="sd">        &gt;&gt;&gt; offset_y = models.Shift(2)</span>
+<span class="sd">        &gt;&gt;&gt; labeled_input = LabeledInput([x, y], [&quot;x&quot;, &quot;y&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; transform = SerialCompositeModel([rotation, offset_x, offset_y],</span>
+<span class="sd">        ...                                  inmap=[[&#39;x&#39;, &#39;y&#39;], [&#39;x&#39;], [&#39;y&#39;]],</span>
+<span class="sd">        ...                                  outmap=[[&#39;x&#39;, &#39;y&#39;], [&#39;x&#39;], [&#39;y&#39;]])</span>
+<span class="sd">        &gt;&gt;&gt; result = transform(labeled_input)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_operator</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">or_</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">inmap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outmap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_inputs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">n_outputs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">n_inputs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">n_inputs</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">n_inputs</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">transforms</span><span class="p">])</span>
+            <span class="c"># the output dimension is equal to the output dim of the last</span>
+            <span class="c"># transform</span>
+            <span class="n">n_outputs</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">n_outputs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">n_outputs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Expected n_inputs and n_outputs&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">transforms</span> <span class="ow">and</span> <span class="n">inmap</span> <span class="ow">and</span> <span class="n">outmap</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">inmap</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">outmap</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Expected sequences of transform, &quot;</span>
+                                 <span class="s">&quot;inmap and outmap to have the same length&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">SerialCompositeModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+                <span class="n">transforms</span><span class="p">,</span> <span class="n">n_inputs</span><span class="p">,</span> <span class="n">n_outputs</span><span class="p">,</span> <span class="n">inmap</span><span class="o">=</span><span class="n">inmap</span><span class="p">,</span> <span class="n">outmap</span><span class="o">=</span><span class="n">outmap</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">transforms</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">inverse</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s">&quot;An analytical inverse has not been implemented for &quot;</span>
+                <span class="s">&quot;{0} models.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">inmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inmap</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">outmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outmap</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inmap</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">outmap</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">SerialCompositeModel</span><span class="p">(</span><span class="n">transforms</span><span class="p">,</span> <span class="n">inmap</span><span class="p">,</span> <span class="n">outmap</span><span class="p">)</span>
+
+</div>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="s">&#39;1.0&#39;</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s">&#39;:ref:`compound-models` as described in the &#39;</span>
+                               <span class="s">&#39;Astropy documentation&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="SummedCompositeModel"><a class="viewcode-back" href="../../../api/astropy.modeling.SummedCompositeModel.html#astropy.modeling.SummedCompositeModel">[docs]</a><span class="k">class</span> <span class="nc">SummedCompositeModel</span><span class="p">(</span><span class="n">_CompositeModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Composite model that evaluates models in parallel.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------</span>
+<span class="sd">    transforms : list</span>
+<span class="sd">        transforms to be executed in parallel</span>
+<span class="sd">    inmap : list or None</span>
+<span class="sd">        labels in an input instance of LabeledInput</span>
+<span class="sd">        if None, the number of input coordinates is exactly what the</span>
+<span class="sd">        transforms expect</span>
+<span class="sd">    outmap : list or None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Evaluate each model separately and add the results to the input_data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_operator</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">inmap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outmap</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">n_inputs</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">n_inputs</span>
+        <span class="n">n_outputs</span> <span class="o">=</span> <span class="n">n_inputs</span>
+        <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">transforms</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">n_inputs</span> <span class="o">==</span> <span class="n">transform</span><span class="o">.</span><span class="n">n_outputs</span> <span class="o">==</span> <span class="n">n_inputs</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;A SummedCompositeModel expects n_inputs = &quot;</span>
+                                 <span class="s">&quot;n_outputs for all transforms&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">SummedCompositeModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">transforms</span><span class="p">,</span> <span class="n">n_inputs</span><span class="p">,</span>
+                                                   <span class="n">n_outputs</span><span class="p">,</span> <span class="n">inmap</span><span class="o">=</span><span class="n">inmap</span><span class="p">,</span>
+                                                   <span class="n">outmap</span><span class="o">=</span><span class="n">outmap</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

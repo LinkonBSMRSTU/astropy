@@ -1,0 +1,65 @@
+
+
+Sine1D
+=========================================
+
+.. currentmodule:: astropy.modeling.functional_models
+
+.. autoclass:: Sine1D
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~Sine1D.amplitude
+      ~Sine1D.frequency
+      ~Sine1D.param_names
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~Sine1D.evaluate
+      ~Sine1D.fit_deriv
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: amplitude
+   .. autoattribute:: frequency
+   .. autoattribute:: param_names
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: evaluate
+   .. automethod:: fit_deriv
+
+   
+   

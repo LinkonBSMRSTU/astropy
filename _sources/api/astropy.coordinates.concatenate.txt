@@ -1,0 +1,10 @@
+
+.. include:: ../coordinates/references.txt
+
+
+concatenate
+===============================
+
+.. currentmodule:: astropy.coordinates
+
+.. autofunction:: concatenate

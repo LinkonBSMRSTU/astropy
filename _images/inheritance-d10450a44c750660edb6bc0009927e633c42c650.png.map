@@ -1,0 +1,14 @@
+<map id="inheritance8586cda724" name="inheritance8586cda724">
+<area shape="rect" id="node1" href="../api/astropy.modeling.Fittable1DModel.html#astropy.modeling.Fittable1DModel" title="Base class for one&#45;dimensional fittable models." alt="" coords="421,104,545,129"/>
+<area shape="rect" id="node2" href="../api/astropy.modeling.FittableModel.html#astropy.modeling.FittableModel" title="Base class for models that can be fitted using the built&#45;in fitting" alt="" coords="220,153,327,179"/>
+<area shape="rect" id="node3" href="../api/astropy.modeling.Fittable2DModel.html#astropy.modeling.Fittable2DModel" title="Base class for two&#45;dimensional fittable models." alt="" coords="421,153,545,179"/>
+<area shape="rect" id="node4" href="../api/astropy.modeling.Model.html#astropy.modeling.Model" title="Base class for all models." alt="" coords="45,203,117,228"/>
+<area shape="rect" id="node11" title="Base class for all composite models." alt="" coords="205,203,341,228"/>
+<area shape="rect" id="node5" href="../api/astropy.modeling.InputParameterError.html#astropy.modeling.InputParameterError" title="Used for incorrect input parameter values and definitions." alt="" coords="5,153,157,179"/>
+<area shape="rect" id="node6" href="../api/astropy.modeling.LabeledInput.html#astropy.modeling.LabeledInput" title=".. deprecated:: 1.0" alt="" coords="221,104,325,129"/>
+<area shape="rect" id="node7" title="Dictionary that remembers insertion order" alt="" coords="32,104,131,129"/>
+<area shape="rect" id="node8" href="../api/astropy.modeling.ModelDefinitionError.html#astropy.modeling.ModelDefinitionError" title="Used for incorrect models definitions" alt="" coords="6,55,157,80"/>
+<area shape="rect" id="node9" href="../api/astropy.modeling.Parameter.html#astropy.modeling.Parameter" title="Wraps individual parameters." alt="" coords="37,5,126,31"/>
+<area shape="rect" id="node10" href="../api/astropy.modeling.SerialCompositeModel.html#astropy.modeling.SerialCompositeModel" title=".. deprecated:: 1.0" alt="" coords="401,203,566,228"/>
+<area shape="rect" id="node12" href="../api/astropy.modeling.SummedCompositeModel.html#astropy.modeling.SummedCompositeModel" title=".. deprecated:: 1.0" alt="" coords="389,252,577,277"/>
+</map>

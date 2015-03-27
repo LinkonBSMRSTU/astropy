@@ -1,0 +1,44 @@
+
+
+ManualInterval
+====================================
+
+.. currentmodule:: astropy.visualization
+
+.. autoclass:: ManualInterval
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~ManualInterval.get_limits
+
+   
+   
+
+   
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: get_limits
+
+   
+   

@@ -1,0 +1,14 @@
+<map id="inheritance3ceb671924" name="inheritance3ceb671924">
+<area shape="rect" id="node1" href="../api/astropy.utils.exceptions.AstropyWarning.html#astropy.utils.exceptions.AstropyWarning" title="The base warning class from which all Astropy warnings should inherit." alt="" coords="5,215,127,240"/>
+<area shape="rect" id="node11" href="../api/astropy.units.UnitsWarning.html#astropy.units.UnitsWarning" title="The base class for unit&#45;specific exceptions." alt="" coords="181,215,286,240"/>
+<area shape="rect" id="node2" href="../api/astropy.units.CompositeUnit.html#astropy.units.CompositeUnit" title="Create a composite unit using expressions of previously defined" alt="" coords="175,104,292,129"/>
+<area shape="rect" id="node3" href="../api/astropy.units.UnitBase.html#astropy.units.UnitBase" title="Abstract base class for units." alt="" coords="26,141,106,167"/>
+<area shape="rect" id="node5" href="../api/astropy.units.NamedUnit.html#astropy.units.NamedUnit" title="The base class of units that have a name." alt="" coords="186,153,281,179"/>
+<area shape="rect" id="node4" href="../api/astropy.units.IrreducibleUnit.html#astropy.units.IrreducibleUnit" title="Irreducible units are the units that all other units are defined" alt="" coords="340,129,455,155"/>
+<area shape="rect" id="node12" href="../api/astropy.units.UnrecognizedUnit.html#astropy.units.UnrecognizedUnit" title="A unit that did not parse correctly. &#160;This allows for" alt="" coords="503,129,639,155"/>
+<area shape="rect" id="node7" href="../api/astropy.units.Unit.html#astropy.units.Unit" title="The main unit class." alt="" coords="361,179,433,204"/>
+<area shape="rect" id="node6" href="../api/astropy.units.PrefixUnit.html#astropy.units.PrefixUnit" title="A unit that is simply a SI&#45;prefixed version of another unit." alt="" coords="529,179,612,204"/>
+<area shape="rect" id="node8" href="../api/astropy.units.quantity.Quantity.html#astropy.units.quantity.Quantity" title="A `~astropy.units.Quantity` represents a number with some associated unit." alt="" coords="195,55,271,80"/>
+<area shape="rect" id="node9" title="ndarray(shape, dtype=float, buffer=None, offset=0," alt="" coords="30,55,102,80"/>
+<area shape="rect" id="node10" href="../api/astropy.units.UnitsError.html#astropy.units.UnitsError" title="The base class for unit&#45;specific exceptions." alt="" coords="23,5,109,31"/>
+</map>

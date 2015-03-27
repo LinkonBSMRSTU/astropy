@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.visualization.mpl_normalize &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.visualization.mpl_normalize</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Normalization class for Matplotlib that can be used to produce colorbars.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ma</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">matplotlib</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">Normalize</span>
+
+    <span class="c"># On older versions of matplotlib Normalize is an old-style class</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Normalize</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">Normalize</span><span class="p">(</span><span class="n">Normalize</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
+            <span class="k">pass</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">Normalize</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s">&quot;matplotlib is required in order to use this class&quot;</span><span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ImageNormalize&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ImageNormalize"><a class="viewcode-back" href="../../../api/astropy.visualization.mpl_normalize.ImageNormalize.html#astropy.visualization.mpl_normalize.ImageNormalize">[docs]</a><span class="k">class</span> <span class="nc">ImageNormalize</span><span class="p">(</span><span class="n">Normalize</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalization class to be used with Matplotlib.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vmin, vmax : float</span>
+<span class="sd">        The minimum and maximum levels to show for the data</span>
+<span class="sd">    stretch : :class:`~astropy.visualization.BaseStretch` instance</span>
+<span class="sd">        The stretch to use for the normalization</span>
+<span class="sd">    clip : bool, optional</span>
+<span class="sd">        Whether to clip the output values to the [0:1] range</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stretch</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ImageNormalize</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="n">clip</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vmin</span> <span class="o">=</span> <span class="n">vmin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vmax</span> <span class="o">=</span> <span class="n">vmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stretch</span> <span class="o">=</span> <span class="n">stretch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inverse_stretch</span> <span class="o">=</span> <span class="n">stretch</span><span class="o">.</span><span class="n">inverse</span>
+
+<div class="viewcode-block" id="ImageNormalize.__call__"><a class="viewcode-back" href="../../../api/astropy.visualization.mpl_normalize.ImageNormalize.html#astropy.visualization.mpl_normalize.ImageNormalize.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">clip</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">clip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">clip</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">mask</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># Make sure scalars get broadcast to 1-d</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># copy because of in-place operations after</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="c"># Normalize based on vmin and vmax</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vmin</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">true_divide</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vmax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">vmin</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="c"># Clip to the 0 to 1 range</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="c"># Stretch values</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stretch</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c"># Convert to masked array for matplotlib</span>
+        <span class="k">return</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImageNormalize.inverse"><a class="viewcode-back" href="../../../api/astropy.visualization.mpl_normalize.ImageNormalize.html#astropy.visualization.mpl_normalize.ImageNormalize.inverse">[docs]</a>    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+
+        <span class="c"># Find unstretched values in range 0 to 1</span>
+        <span class="n">values_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_stretch</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c"># Scale to original range</span>
+        <span class="k">return</span> <span class="n">values_norm</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vmax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">vmin</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vmin</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

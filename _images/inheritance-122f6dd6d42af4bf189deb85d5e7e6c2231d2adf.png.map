@@ -1,0 +1,15 @@
+<map id="inheritancecc8b866a55" name="inheritancecc8b866a55">
+<area shape="rect" id="node1" href="../api/astropy.modeling.polynomial.Chebyshev1D.html#astropy.modeling.polynomial.Chebyshev1D" title="1D Chebyshev polynomial of the 1st kind." alt="" coords="653,5,763,30"/>
+<area shape="rect" id="node2" href="../api/astropy.modeling.polynomial.PolynomialModel.html#astropy.modeling.polynomial.PolynomialModel" title="Base class for polynomial models." alt="" coords="462,103,591,128"/>
+<area shape="rect" id="node8" href="../api/astropy.modeling.polynomial.Legendre1D.html#astropy.modeling.polynomial.Legendre1D" title="1D Legendre polynomial." alt="" coords="658,54,757,79"/>
+<area shape="rect" id="node11" href="../api/astropy.modeling.polynomial.Polynomial1D.html#astropy.modeling.polynomial.Polynomial1D" title="1D Polynomial model." alt="" coords="653,103,762,128"/>
+<area shape="rect" id="node12" href="../api/astropy.modeling.polynomial.Polynomial2D.html#astropy.modeling.polynomial.Polynomial2D" title="2D Polynomial &#160;model." alt="" coords="653,152,762,177"/>
+<area shape="rect" id="node3" href="../api/astropy.modeling.polynomial.Chebyshev2D.html#astropy.modeling.polynomial.Chebyshev2D" title="2D Chebyshev polynomial of the 1st kind." alt="" coords="653,201,763,226"/>
+<area shape="rect" id="node4" href="../api/astropy.modeling.polynomial.OrthoPolynomialBase.html#astropy.modeling.polynomial.OrthoPolynomialBase" title="This is a base class for the 2D Chebyshev and Legendre models." alt="" coords="448,201,605,226"/>
+<area shape="rect" id="node9" href="../api/astropy.modeling.polynomial.Legendre2D.html#astropy.modeling.polynomial.Legendre2D" title="Legendre 2D polynomial." alt="" coords="658,250,757,275"/>
+<area shape="rect" id="node5" href="../api/astropy.modeling.FittableModel.html#astropy.modeling.FittableModel" title="Base class for models that can be fitted using the built&#45;in fitting" alt="" coords="124,152,230,177"/>
+<area shape="rect" id="node10" title="Base class for all polynomial&#45;like models with an arbitrary number of" alt="" coords="278,152,400,177"/>
+<area shape="rect" id="node6" href="../api/astropy.modeling.Model.html#astropy.modeling.Model" title="Base class for all models." alt="" coords="5,201,77,226"/>
+<area shape="rect" id="node7" href="../api/astropy.modeling.polynomial.InverseSIP.html#astropy.modeling.polynomial.InverseSIP" title="Inverse Simple Imaging Polynomial" alt="" coords="134,201,221,226"/>
+<area shape="rect" id="node13" href="../api/astropy.modeling.polynomial.SIP.html#astropy.modeling.polynomial.SIP" title="Simple Imaging Polynomial (SIP) model." alt="" coords="142,250,213,275"/>
+</map>

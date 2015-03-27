@@ -1,0 +1,67 @@
+
+
+Mapping
+=================================
+
+.. currentmodule:: astropy.modeling.mappings
+
+.. autoclass:: Mapping
+   :show-inheritance:
+
+   
+     
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~Mapping.inputs
+      ~Mapping.inverse
+      ~Mapping.mapping
+      ~Mapping.outputs
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~Mapping.eval
+      ~Mapping.evaluate
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: inputs
+   .. autoattribute:: inverse
+   .. autoattribute:: mapping
+   .. autoattribute:: outputs
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: eval
+   .. automethod:: evaluate
+
+   
+   

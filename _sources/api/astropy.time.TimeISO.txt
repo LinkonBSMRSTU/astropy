@@ -1,0 +1,61 @@
+
+.. include:: ../time/references.txt
+
+
+TimeISO
+====================
+
+.. currentmodule:: astropy.time
+
+.. autoclass:: TimeISO
+   :show-inheritance:
+
+   
+
+   
+   
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+   
+      ~TimeISO.name
+      ~TimeISO.subfmts
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+   
+      ~TimeISO.parse_string
+
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes Documentation
+
+   
+   .. autoattribute:: name
+   .. autoattribute:: subfmts
+
+   
+   
+
+   
+   
+
+   .. rubric:: Methods Documentation
+
+   
+   .. automethod:: parse_string
+
+   
+   

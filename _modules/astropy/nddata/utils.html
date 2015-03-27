@@ -1,0 +1,295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>astropy.nddata.utils &mdash; Astropy v1.1.dev12121</title>
+    
+    <link rel="stylesheet" href="../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.dev12121',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../../../_static/astropy_logo.ico"/>
+    <link rel="top" title="Astropy v1.1.dev12121" href="../../../index.html" />
+    <link rel="up" title="astropy.nddata" href="../nddata.html" />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="../../../_static/copybutton.js"></script>
+
+
+  </head>
+  <body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../index.html"><span id="logotext1">astro</span><span id="logotext2">py</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../index.html">Astropy v1.1.dev12121</a>
+	 &raquo;
+      </li>
+      <li><a href="../../index.html" >Module code</a> &raquo;</li>
+      <li><a href="../nddata.html" accesskey="U">astropy.nddata</a> &raquo;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for astropy.nddata.utils</h1><div class="highlight"><pre>
+<span class="c"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module includes helper functions for array operations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;extract_array&#39;</span><span class="p">,</span> <span class="s">&#39;add_array&#39;</span><span class="p">,</span> <span class="s">&#39;subpixel_indices&#39;</span><span class="p">,</span>
+           <span class="s">&#39;overlap_slices&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="overlap_slices"><a class="viewcode-back" href="../../../api/astropy.nddata.utils.overlap_slices.html#astropy.nddata.utils.overlap_slices">[docs]</a><span class="k">def</span> <span class="nf">overlap_slices</span><span class="p">(</span><span class="n">large_array_shape</span><span class="p">,</span> <span class="n">small_array_shape</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get slices for the overlapping part of a small and a large array.</span>
+
+<span class="sd">    Given a certain position of the center of the small array, with</span>
+<span class="sd">    respect to the large array, tuples of slices are returned which can be</span>
+<span class="sd">    used to extract, add or subtract the small array at the given</span>
+<span class="sd">    position. This function takes care of the correct behavior at the</span>
+<span class="sd">    boundaries, where the small array is cut of appropriately.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    large_array_shape : tuple</span>
+<span class="sd">        Shape of the large array.</span>
+<span class="sd">    small_array_shape : tuple</span>
+<span class="sd">        Shape of the small array.</span>
+<span class="sd">    position : tuple</span>
+<span class="sd">        Position of the small array&#39;s center, with respect to the large array.</span>
+<span class="sd">        Coordinates should be in the same order as the array shape.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    slices_large : tuple of slices</span>
+<span class="sd">        Slices in all directions for the large array, such that</span>
+<span class="sd">        ``large_array[slices_large]`` extracts the region of the large array</span>
+<span class="sd">        that overlaps with the small array.</span>
+<span class="sd">    slices_small : slice</span>
+<span class="sd">        Slices in all directions for the small array, such that</span>
+<span class="sd">        ``small_array[slices_small]`` extracts the region that is inside the</span>
+<span class="sd">        large array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Get edge coordinates</span>
+    <span class="n">edges_min</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">small_shape</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">small_shape</span><span class="p">)</span> <span class="ow">in</span>
+                 <span class="nb">zip</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">small_array_shape</span><span class="p">)]</span>
+    <span class="n">edges_max</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">small_shape</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">small_shape</span><span class="p">)</span> <span class="ow">in</span>
+                 <span class="nb">zip</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">small_array_shape</span><span class="p">)]</span>
+
+    <span class="c"># Set up slices</span>
+    <span class="n">slices_large</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">edge_min</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">large_shape</span><span class="p">,</span> <span class="n">edge_max</span><span class="p">))</span>
+                         <span class="k">for</span> <span class="p">(</span><span class="n">edge_min</span><span class="p">,</span> <span class="n">edge_max</span><span class="p">,</span> <span class="n">large_shape</span><span class="p">)</span> <span class="ow">in</span>
+                         <span class="nb">zip</span><span class="p">(</span><span class="n">edges_min</span><span class="p">,</span> <span class="n">edges_max</span><span class="p">,</span> <span class="n">large_array_shape</span><span class="p">))</span>
+    <span class="n">slices_small</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">edge_min</span><span class="p">),</span>
+                               <span class="nb">min</span><span class="p">(</span><span class="n">large_shape</span> <span class="o">-</span> <span class="n">edge_min</span><span class="p">,</span> <span class="n">edge_max</span> <span class="o">-</span> <span class="n">edge_min</span><span class="p">))</span>
+                         <span class="k">for</span> <span class="p">(</span><span class="n">edge_min</span><span class="p">,</span> <span class="n">edge_max</span><span class="p">,</span> <span class="n">large_shape</span><span class="p">)</span> <span class="ow">in</span>
+                         <span class="nb">zip</span><span class="p">(</span><span class="n">edges_min</span><span class="p">,</span> <span class="n">edges_max</span><span class="p">,</span> <span class="n">large_array_shape</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">slices_large</span><span class="p">,</span> <span class="n">slices_small</span>
+
+</div>
+<div class="viewcode-block" id="extract_array"><a class="viewcode-back" href="../../../api/astropy.nddata.utils.extract_array.html#astropy.nddata.utils.extract_array">[docs]</a><span class="k">def</span> <span class="nf">extract_array</span><span class="p">(</span><span class="n">array_large</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract smaller array of given shape and position out of a larger array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array_large : `~numpy.ndarray`</span>
+<span class="sd">        Array to extract another array from.</span>
+<span class="sd">    shape : tuple</span>
+<span class="sd">        Shape of the extracted array.</span>
+<span class="sd">    position : tuple</span>
+<span class="sd">        Position of the small array&#39;s center, with respect to the large array.</span>
+<span class="sd">        Coordinates should be in the same order as the array shape.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_small : `~numpy.ndarray`</span>
+<span class="sd">        The extracted array</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    We consider a large array with the shape 11x10, from which we extract</span>
+<span class="sd">    a small array of shape 3x5:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from astropy.nddata.utils import extract_array</span>
+<span class="sd">    &gt;&gt;&gt; large_array = np.arange(110).reshape((11, 10))</span>
+<span class="sd">    &gt;&gt;&gt; large_array[4:9, 4:9] = np.ones((5, 5))</span>
+<span class="sd">    &gt;&gt;&gt; extract_array(large_array, (3, 5), (7, 7))</span>
+<span class="sd">    array([[ 1,  1,  1,  1, 69],</span>
+<span class="sd">           [ 1,  1,  1,  1, 79],</span>
+<span class="sd">           [ 1,  1,  1,  1, 89]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Check if larger array is really larger</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">large_shape</span> <span class="o">&gt;</span> <span class="n">small_shape</span> <span class="k">for</span> <span class="p">(</span><span class="n">large_shape</span><span class="p">,</span> <span class="n">small_shape</span><span class="p">)</span>
+           <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">array_large</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">shape</span><span class="p">)):</span>
+        <span class="n">large_slices</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">overlap_slices</span><span class="p">(</span><span class="n">array_large</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array_large</span><span class="p">[</span><span class="n">large_slices</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can&#39;t extract array. Shape too large.&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="add_array"><a class="viewcode-back" href="../../../api/astropy.nddata.utils.add_array.html#astropy.nddata.utils.add_array">[docs]</a><span class="k">def</span> <span class="nf">add_array</span><span class="p">(</span><span class="n">array_large</span><span class="p">,</span> <span class="n">array_small</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a smaller array at a given position in a larger array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array_large : `~numpy.ndarray`</span>
+<span class="sd">        Large array.</span>
+<span class="sd">    array_small : `~numpy.ndarray`</span>
+<span class="sd">        Small array to add.</span>
+<span class="sd">    position : tuple</span>
+<span class="sd">        Position of the small array&#39;s center, with respect to the large array.</span>
+<span class="sd">        Coordinates should be in the same order as the array shape.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_array : `~numpy.ndarray`</span>
+<span class="sd">        The new array formed from the sum of ``array_large`` and</span>
+<span class="sd">        ``array_small``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The addition is done in-place.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    We consider a large array of zeros with the shape 5x5 and a small</span>
+<span class="sd">    array of ones with a shape of 3x3:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from astropy.nddata.utils import add_array</span>
+<span class="sd">    &gt;&gt;&gt; large_array = np.zeros((5, 5))</span>
+<span class="sd">    &gt;&gt;&gt; small_array = np.ones((3, 3))</span>
+<span class="sd">    &gt;&gt;&gt; add_array(large_array, small_array, (1, 2))</span>
+<span class="sd">    array([[ 0.,  1.,  1.,  1.,  0.],</span>
+<span class="sd">           [ 0.,  1.,  1.,  1.,  0.],</span>
+<span class="sd">           [ 0.,  1.,  1.,  1.,  0.],</span>
+<span class="sd">           [ 0.,  0.,  0.,  0.,  0.],</span>
+<span class="sd">           [ 0.,  0.,  0.,  0.,  0.]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Check if large array is really larger</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">large_shape</span> <span class="o">&gt;</span> <span class="n">small_shape</span> <span class="k">for</span> <span class="p">(</span><span class="n">large_shape</span><span class="p">,</span> <span class="n">small_shape</span><span class="p">)</span>
+           <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">array_large</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">array_small</span><span class="o">.</span><span class="n">shape</span><span class="p">)):</span>
+        <span class="n">large_slices</span><span class="p">,</span> <span class="n">small_slices</span> <span class="o">=</span> <span class="n">overlap_slices</span><span class="p">(</span><span class="n">array_large</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                                    <span class="n">array_small</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+        <span class="n">array_large</span><span class="p">[</span><span class="n">large_slices</span><span class="p">]</span> <span class="o">+=</span> <span class="n">array_small</span><span class="p">[</span><span class="n">small_slices</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">array_large</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can&#39;t add array. Small array too large.&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="subpixel_indices"><a class="viewcode-back" href="../../../api/astropy.nddata.utils.subpixel_indices.html#astropy.nddata.utils.subpixel_indices">[docs]</a><span class="k">def</span> <span class="nf">subpixel_indices</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">subsampling</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert decimal points to indices, given a subsampling factor.</span>
+
+<span class="sd">    This discards the integer part of the position and uses only the decimal</span>
+<span class="sd">    place, and converts this to a subpixel position depending on the</span>
+<span class="sd">    subsampling specified. The center of a pixel corresponds to an integer</span>
+<span class="sd">    position.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    position : `~numpy.ndarray` or array-like</span>
+<span class="sd">        Positions in pixels.</span>
+<span class="sd">    subsampling : int</span>
+<span class="sd">        Subsampling factor per pixel.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    indices : `~numpy.ndarray`</span>
+<span class="sd">        The integer subpixel indices corresponding to the input positions.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    If no subsampling is used, then the subpixel indices returned are always 0:</span>
+
+<span class="sd">    &gt;&gt;&gt; from astropy.nddata.utils import subpixel_indices</span>
+<span class="sd">    &gt;&gt;&gt; subpixel_indices([1.2, 3.4, 5.6],1)</span>
+<span class="sd">    array([ 0.,  0.,  0.])</span>
+
+<span class="sd">    If instead we use a subsampling of 2, we see that for the two first values</span>
+<span class="sd">    (1.1 and 3.4) the subpixel position is 1, while for 5.6 it is 0. This is</span>
+<span class="sd">    because the values of 1, 3, and 6 lie in the center of pixels, and 1.1 and</span>
+<span class="sd">    3.4 lie in the left part of the pixels and 5.6 lies in the right part.</span>
+
+<span class="sd">    &gt;&gt;&gt; subpixel_indices([1.2, 3.4, 5.5],2)</span>
+<span class="sd">    array([ 1.,  1.,  0.])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Get decimal points</span>
+    <span class="n">fractions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">modf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">fractions</span> <span class="o">*</span> <span class="n">subsampling</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2011-2015, The Astropy Developers.<br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.1. &nbsp;
+    Last built 26 Mar 2015. <br/>
+  </p>
+</footer>
+  </body>
+</html>

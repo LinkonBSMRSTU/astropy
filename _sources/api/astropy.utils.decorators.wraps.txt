@@ -1,0 +1,8 @@
+
+
+wraps
+==============================
+
+.. currentmodule:: astropy.utils.decorators
+
+.. autofunction:: wraps
