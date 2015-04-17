@@ -52,9 +52,9 @@ The basic workflow is as follows:
        - From pixels to world coordinates:
 
          - `~astropy.wcs.wcs.WCS.all_pix2world`: Perform all three
-           transformations in series (core WCS, SIP and table lookup
-           distortions) from pixel to world coordinates.  Use this one
-           if you're not sure which to use.
+           transformations in series (SIP, table lookup distortions
+           and core WCS) from pixel to world coordinates.  Use this
+           one if you're not sure which to use.
 
          - `~astropy.wcs.wcs.WCS.wcs_pix2world`: Perform just the core
            WCS transformation from pixel to world coordinates.
